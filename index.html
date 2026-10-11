@@ -2049,10 +2049,18 @@
   var originalShowPage = showPage;
   window.showPage = function(page) {
     var isProtected = protectedPages.indexOf(page) > -1;
-    var user = window.supabase.auth.currentUser;
 
-    if (isProtected && !user) {
-      originalShowPage('login');
+    if (isProtected) {
+      // 用 getSession() 而不是 currentUser，确保刷新页面后能正确读取 session
+      window.supabase.auth.getSession().then(function({ data: { session } }) {
+        if (!session) {
+          originalShowPage('login');
+          history.pushState(null, '', '#login');
+          return;
+        }
+        originalShowPage(page);
+        updateNavAuthState(session.user);
+      });
       return;
     }
 
