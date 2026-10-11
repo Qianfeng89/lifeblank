@@ -775,11 +775,6 @@
 
       </div>
         </div>
-        <div class="guide-item reveal">
-          <div class="guide-cat">实用工具</div>
-          <div class="guide-title">免费下载：个人数字资产整理清单模板</div>
-          <div class="guide-excerpt">照着这份清单列一遍，你会清楚自己有多少数字资产需要安排。不需要注册。</div>
-        </div>
       </div>
     </div>
   </section>
@@ -1604,6 +1599,16 @@
     link.addEventListener('click', function(e) {
       e.preventDefault();
       var page = this.getAttribute('data-page');
+
+      // 特殊处理：如果是跳转到登录页，先判断用户是否已登录
+      if (page === 'login') {
+        const user = window.supabase ? window.supabase.auth.currentUser : null;
+        if (user) {
+          // 已登录，直接跳到资产清单页
+          page = 'assets';
+        }
+      }
+
       showPage(page);
       history.pushState(null, '', '#' + page);
     });
@@ -1962,8 +1967,8 @@
         updateNavAuthState(user);
 
         setTimeout(function() {
-          showPage('onboarding');
-          history.pushState(null, '', '#onboarding');
+          showPage('assets');
+          history.pushState(null, '', '#assets');
         }, 800);
       } catch (err) {
         showAuthMessage((isLoginMode ? '登录' : '注册') + '失败：' + err.message, 'error');
@@ -2032,10 +2037,10 @@
     // 用 session.user 更新导航栏，而不是 currentUser
     updateNavAuthState(session ? session.user : null);
 
-    // 如果在登录页且已登录，跳到 onboarding
+    // 如果在登录页且已登录，跳到资产清单页
     if (session && window.location.hash === '#login') {
-      showPage('onboarding');
-      history.pushState(null, '', '#onboarding');
+      showPage('assets');
+      history.pushState(null, '', '#assets');
     }
   });
 
@@ -2081,12 +2086,26 @@
   // 登出
   var logoutBtn = document.getElementById('logoutBtn');
   if (logoutBtn) {
-    logoutBtn.addEventListener('click', async function() {
-      await window.supabase.auth.signOut();
-      updateNavAuthState(null);
-      showPage('home');
-      history.pushState(null, '', '#home');
+    logoutBtn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        const { error } = await window.supabase.auth.signOut();
+        if (error) throw error;
+
+        // 登出成功，更新导航栏
+        updateNavAuthState(null);
+
+        // 跳回首页
+        showPage('home');
+        history.pushState(null, '', '#home');
+      } catch (err) {
+        alert('退出登录失败：' + err.message);
+      }
     });
+  } else {
+    console.error('logoutBtn not found');
   }
 
   // ===== 数据库操作 =====
