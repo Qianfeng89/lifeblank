@@ -9,7 +9,14 @@
   import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
   window.supabase = createClient(
     'https://swryoiktxxiehyefbtmk.supabase.co',
-    'sb_publishable_vUKgWACYPYRml2Z0zQMg3w_17VTR2tP'
+    'sb_publishable_vUKgWACYPYRml2Z0zQMg3w_17VTR2tP',
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
   );
 </script>
 <style>
@@ -1521,43 +1528,35 @@
 </div>
 
 <!-- ================================================== -->
-<!-- 页面：后台管理 -->
+<!-- 页面：后台管理（独立页面） -->
 <!-- ================================================== -->
 <div class="page" id="page-admin">
-  <div class="dashboard-layout">
-    <div class="sidebar">
-      <ul class="sidebar-menu">
-        <li data-sidebar="dashboard">概览</li>
-        <li data-sidebar="assets">资产清单</li>
-        <li data-sidebar="subscription">订阅状态</li>
-        <li data-sidebar="settings">账号设置</li>
-        <li class="active" data-sidebar="admin">后台管理</li>
-      </ul>
+  <div style="max-width:1200px;margin:0 auto;padding:100px 24px 60px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;">
+      <h2 style="font-size:24px;font-weight:700;">后台管理</h2>
+      <a href="#dashboard" data-page="dashboard" style="font-size:14px;color:#2D6A4F;">← 返回个人中心</a>
     </div>
-    <div class="main-content">
-      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px;">后台管理</h2>
 
-      <!-- 统计卡片 -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px;">
-        <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
-          <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">总用户数</div>
-          <div id="statTotalUsers" style="font-size:24px;font-weight:700;">-</div>
-        </div>
-        <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
-          <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">总资产数</div>
-          <div id="statTotalAssets" style="font-size:24px;font-weight:700;">-</div>
-        </div>
-        <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
-          <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">活跃订阅</div>
-          <div id="statActiveSubs" style="font-size:24px;font-weight:700;">-</div>
-        </div>
+    <!-- 统计卡片 -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px;">
+      <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">总用户数</div>
+        <div id="statTotalUsers" style="font-size:24px;font-weight:700;">-</div>
       </div>
+      <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">总资产数</div>
+        <div id="statTotalAssets" style="font-size:24px;font-weight:700;">-</div>
+      </div>
+      <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
+        <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">活跃订阅</div>
+        <div id="statActiveSubs" style="font-size:24px;font-weight:700;">-</div>
+      </div>
+    </div>
 
-      <!-- 用户列表 -->
-      <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">用户列表</h3>
-      <div id="adminUserList" style="background:#fff;border:1px solid rgba(0,0,0,0.06);border-radius:12px;overflow:hidden;">
-        <div style="padding:40px;text-align:center;color:#9CA3AF;">加载中...</div>
-      </div>
+    <!-- 用户列表 -->
+    <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">用户列表</h3>
+    <div id="adminUserList" style="background:#fff;border:1px solid rgba(0,0,0,0.06);border-radius:12px;overflow:hidden;">
+      <div style="padding:40px;text-align:center;color:#9CA3AF;">加载中...</div>
     </div>
   </div>
 </div>
@@ -1959,10 +1958,8 @@
           showAuthMessage('注册成功！正在进入引导...', 'success');
         }
 
-        // 等待 session 完全建立后再更新导航
-        setTimeout(function() {
-          updateNavAuthState();
-        }, 500);
+        // 更新导航栏，用 data.user 而不是 currentUser
+        updateNavAuthState(user);
 
         setTimeout(function() {
           showPage('onboarding');
@@ -2009,8 +2006,11 @@
   }
 
   // 更新导航栏登录状态
-  function updateNavAuthState() {
-    const user = window.supabase.auth.currentUser;
+  function updateNavAuthState(user) {
+    // 如果没有传入 user 参数，就用 currentUser
+    if (!user) {
+      user = window.supabase.auth.currentUser;
+    }
     const navCta = document.getElementById('navCtaBtn');
     if (!navCta) return;
 
@@ -2029,7 +2029,8 @@
 
   // 监听登录状态变化
   window.supabase.auth.onAuthStateChange(function(event, session) {
-    updateNavAuthState();
+    // 用 session.user 更新导航栏，而不是 currentUser
+    updateNavAuthState(session ? session.user : null);
 
     // 如果在登录页且已登录，跳到 onboarding
     if (session && window.location.hash === '#login') {
@@ -2056,7 +2057,8 @@
 
   // 初始化时检查登录状态
   window.supabase.auth.getSession().then(function({ data: { session } }) {
-    updateNavAuthState();
+    // 用 session.user 更新导航栏，而不是 currentUser
+    updateNavAuthState(session ? session.user : null);
 
     // 显示用户邮箱
     if (session && session.user) {
@@ -2081,9 +2083,9 @@
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async function() {
       await window.supabase.auth.signOut();
+      updateNavAuthState(null);
       showPage('home');
       history.pushState(null, '', '#home');
-      updateNavAuthState();
     });
   }
 
