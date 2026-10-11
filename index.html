@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>留白 · 替你好好说再见</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #FAF9F6; color: #1A1B1C; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .serif { font-family: 'Noto Serif SC', 'Songti SC', serif; }
+  a { text-decoration: none; color: inherit; }
+  button { font-family: inherit; cursor: pointer; border: none; }
+
+  /* ===== 导航栏 ===== */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(250,249,246,0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.3s;
+  }
+  nav.scrolled { box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+  .nav-inner {
+    max-width: 1120px; margin: 0 auto; padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo { font-family: 'Noto Serif SC', serif; font-size: 20px; font-weight: 700; color: #2D6A4F; display: flex; align-items: baseline; gap: 8px; }
+  .logo span { color: #E07A5F; }
+  .logo-sub { font-family: 'Noto Sans SC', sans-serif; font-size: 11px; font-weight: 400; color: #9CA3AF; letter-spacing: 0.05em; }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a { font-size: 14px; color: #4A5568; transition: color 0.2s; padding: 4px 0; position: relative; }
+  .nav-links a:hover { color: #2D6A4F; }
+  .nav-links a.active { color: #2D6A4F; font-weight: 600; }
+  .nav-links a.active::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+    height: 2px; background: #2D6A4F; border-radius: 2px;
+  }
+  .nav-cta {
+    display: inline-block;
+    background: #2D6A4F; color: #fff !important;
+    padding: 12px 40px;
+    border-radius: 8px; font-weight: 500; line-height: 1;
+    white-space: nowrap;
+  }
+  .nav-cta:hover { background: #1B4332; }
+  .nav-cta.active::after { display: none; }
+
+  /* ===== 页面容器 ===== */
+  .page { display: none; padding-top: 70px; min-height: 100vh; }
+  .page.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* ===== Hero ===== */
+  .hero { text-align: center; padding: 80px 0 60px; }
+  .hero-eyebrow {
+    display: inline-block; padding: 6px 14px;
+    background: rgba(45,106,79,0.08); color: #2D6A4F;
+    border-radius: 100px; font-size: 13px; font-weight: 500; margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(36px, 6vw, 56px); font-weight: 700; line-height: 1.15;
+    letter-spacing: -0.02em; margin-bottom: 24px;
+  }
+  .hero h1 em { font-style: normal; color: #2D6A4F; }
+  .hero p { font-size: 18px; color: #6B7280; max-width: 560px; margin: 0 auto 40px; }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: #E07A5F; color: #fff; padding: 14px 32px;
+    border-radius: 10px; font-size: 16px; font-weight: 500;
+    transition: all 0.2s; display: inline-block;
+  }
+  .btn-primary:hover { background: #CB6342; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent; color: #2D6A4F; padding: 14px 32px;
+    border-radius: 10px; font-size: 16px; font-weight: 500;
+    border: 1.5px solid #2D6A4F; transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: rgba(45,106,79,0.06); }
+
+  /* ===== 资产卡片墙 ===== */
+  .asset-wall { padding: 0 0 80px; }
+  .asset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .asset-card {
+    padding: 18px 14px; background: #fff;
+    border: 1px solid rgba(0,0,0,0.06); border-radius: 12px;
+    text-align: center; transition: all 0.2s;
+  }
+  .asset-card:hover { border-color: #95D5B2; transform: translateY(-2px); }
+  .asset-icon { font-size: 28px; margin-bottom: 10px; }
+  .asset-name { font-size: 13px; font-weight: 500; }
+  .asset-desc { font-size: 11px; color: #9CA3AF; margin-top: 4px; }
+
+  /* ===== 通用 Section ===== */
+  .section { padding: 80px 0; }
+  .section.white { background: #fff; border-top: 1px solid rgba(0,0,0,0.05); }
+  .section-label { font-size: 12px; color: #E07A5F; font-weight: 600; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .section-title { font-family: 'Noto Serif SC', serif; font-size: clamp(28px, 4vw, 40px); font-weight: 700; line-height: 1.2; margin-bottom: 16px; }
+  .section-subtitle { font-size: 16px; color: #6B7280; max-width: 600px; margin-bottom: 48px; line-height: 1.7; }
+
+  /* ===== 痛点卡片 ===== */
+  .pain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .pain-card { padding: 28px; background: #FAF9F6; border-radius: 14px; border: 1px solid rgba(0,0,0,0.04); }
+  .pain-num { font-family: 'Noto Serif SC', serif; font-size: 32px; font-weight: 700; color: #95D5B2; line-height: 1; margin-bottom: 16px; }
+  .pain-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .pain-text { font-size: 14px; color: #6B7280; line-height: 1.7; }
+
+  /* ===== 三步原理 ===== */
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; }
+  .step { padding: 28px; background: #fff; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06); position: relative; }
+  .step-num {
+    position: absolute; top: -12px; left: 24px;
+    width: 28px; height: 28px; background: #2D6A4F; color: #fff;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600;
+  }
+  .step-icon { font-size: 28px; margin-bottom: 16px; }
+  .step-title { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .step-text { font-size: 14px; color: #6B7280; line-height: 1.7; }
+
+  /* ===== 两层产品卡片 ===== */
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .product-card { padding: 32px; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06); }
+  .product-card.teal { background: linear-gradient(135deg, rgba(149,213,178,0.12), rgba(149,213,178,0.25)); border-color: #95D5B2; }
+  .product-card.coral { background: linear-gradient(135deg, rgba(224,122,95,0.08), rgba(224,122,95,0.18)); border-color: #E07A5F; }
+  .product-badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+  .teal .product-badge { background: rgba(45,106,79,0.12); color: #2D6A4F; }
+  .coral .product-badge { background: rgba(224,122,95,0.12); color: #CB6342; }
+  .product-name { font-family: 'Noto Serif SC', serif; font-size: 24px; font-weight: 700; margin-bottom: 12px; }
+  .product-price { font-size: 14px; color: #6B7280; margin-bottom: 20px; }
+  .product-price b { font-size: 28px; color: #1A1B1C; }
+  .product-list { list-style: none; }
+  .product-list li { font-size: 14px; color: #374151; padding: 6px 0 6px 24px; position: relative; line-height: 1.6; }
+  .product-list li::before { content: "✓"; position: absolute; left: 0; color: #2D6A4F; font-weight: 600; }
+  .coral .product-list li::before { color: #E07A5F; }
+
+  /* ===== 定价表 ===== */
+  .pricing-table { margin-top: 48px; background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06); overflow: hidden; }
+  .pricing-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 1px; background: rgba(0,0,0,0.06); }
+  .pricing-row > div { background: #fff; padding: 18px 20px; }
+  .pricing-row.header > div { background: #FAF9F6; font-weight: 600; font-size: 13px; color: #4A5568; }
+  .tier-price { font-size: 18px; font-weight: 700; color: #2D6A4F; }
+  .pricing-note { font-size: 12px; color: #9CA3AF; margin-top: 16px; line-height: 1.7; }
+
+  /* ===== 安全承诺（深色）===== */
+  .trust-section { background: #1B4332; padding: 80px 0; }
+  .trust-section .section-title { color: #fff; }
+  .trust-section .section-subtitle { color: rgba(255,255,255,0.7); }
+  .trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+  .trust-item { padding: 24px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); }
+  .trust-icon { font-size: 24px; margin-bottom: 12px; }
+  .trust-title { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .trust-text { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.7; }
+
+  /* ===== 底部CTA ===== */
+  .final-cta { background: #2D6A4F; padding: 80px 0; text-align: center; }
+  .final-cta h2 { font-family: 'Noto Serif SC', serif; font-size: clamp(28px, 4vw, 42px); font-weight: 700; color: #fff; margin-bottom: 16px; }
+  .final-cta p { color: rgba(255,255,255,0.75); font-size: 16px; margin-bottom: 32px; }
+
+  /* ===== FAQ 手风琴 ===== */
+  .faq-list { max-width: 760px; margin: 48px auto 0; }
+  .faq-item { background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .faq-question {
+    padding: 20px 24px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+    font-size: 15px; font-weight: 600; color: #1A1B1C; transition: background 0.2s;
+  }
+  .faq-question:hover { background: #FAF9F6; }
+  .faq-arrow { transition: transform 0.3s; color: #9CA3AF; font-size: 14px; }
+  .faq-item.open .faq-arrow { transform: rotate(180deg); }
+  .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .faq-item.open .faq-answer { max-height: 400px; }
+  .faq-answer-inner { padding: 0 24px 20px; font-size: 14px; color: #6B7280; line-height: 1.8; }
+
+  /* ===== 表单 ===== */
+  .form-card { max-width: 560px; margin: 48px auto 0; background: #fff; border-radius: 16px; padding: 36px; border: 1px solid rgba(0,0,0,0.06); }
+  .form-group { margin-bottom: 20px; }
+  .form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+  .form-input, .form-textarea, .form-select {
+    width: 100%; padding: 12px 14px; border: 1.5px solid #E4E3DD; border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: #FAF9F6; transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-textarea:focus, .form-select:focus { outline: none; border-color: #2D6A4F; }
+  .form-textarea { resize: vertical; min-height: 100px; }
+  .form-submit { width: 100%; padding: 14px; background: #E07A5F; color: #fff; border-radius: 10px; font-size: 16px; font-weight: 500; }
+  .form-submit:hover { background: #CB6342; }
+  .form-success { display: none; text-align: center; padding: 40px 20px; }
+  .form-success.show { display: block; }
+  .form-success-icon { font-size: 48px; margin-bottom: 16px; }
+
+  /* ===== 指南文章列表（手风琴） ===== */
+  .guide-list { max-width: 760px; margin: 48px auto 0; }
+  .guide-item {
+    background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px;
+    margin-bottom: 12px; overflow: hidden; transition: all 0.2s;
+  }
+  .guide-item:hover { border-color: #95D5B2; }
+  .guide-header { padding: 24px; cursor: pointer; position: relative; }
+  .guide-cat { font-size: 11px; color: #E07A5F; font-weight: 600; margin-bottom: 6px; }
+  .guide-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; padding-right: 24px; }
+  .guide-excerpt { font-size: 13px; color: #6B7280; line-height: 1.6; }
+  .guide-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .guide-item.open .guide-content { max-height: 600px; }
+  .guide-item .faq-arrow { transition: transform 0.3s; position: absolute; bottom: 24px; right: 24px; color: #9CA3AF; font-size: 14px; }
+  .guide-item.open .faq-arrow { transform: rotate(180deg); }
+
+  /* ===== 页脚 ===== */
+  footer { background: #FAF9F6; padding: 40px 0; border-top: 1px solid rgba(0,0,0,0.05); }
+  .footer-inner { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+  .footer-links { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; }
+  .footer-links a { font-size: 13px; color: #6B7280; cursor: pointer; }
+  .footer-links a:hover { color: #2D6A4F; }
+  .footer-copy { font-size: 12px; color: #9CA3AF; line-height: 1.6; }
+
+  /* ===== 滚动渐入 ===== */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* ===== 步骤条 ===== */
+  .steps-bar { display: flex; justify-content: center; gap: 0; margin: 40px 0 0; }
+  .step-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #9CA3AF; }
+  .step-item.active { color: #2D6A4F; font-weight: 600; }
+  .step-item.done { color: #95D5B2; }
+  .step-dot {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #E4E3DD; color: #9CA3AF;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+  }
+  .step-item.active .step-dot { background: #2D6A4F; color: #fff; }
+  .step-item.done .step-dot { background: #95D5B2; color: #fff; }
+  .step-line { width: 40px; height: 1px; background: #E4E3DD; margin: 0 8px; }
+
+  /* ===== 计划选择卡片 ===== */
+  .plan-options { max-width: 720px; margin: 48px auto 0; }
+  .plan-option {
+    padding: 24px; background: #fff; border: 2px solid #E4E3DD; border-radius: 14px;
+    margin-bottom: 12px; cursor: pointer; transition: all 0.2s; display: flex; justify-content: space-between; align-items: center;
+  }
+  .plan-option:hover { border-color: #95D5B2; }
+  .plan-option.selected { border-color: #2D6A4F; background: rgba(149,213,178,0.08); }
+  .plan-left h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .plan-left p { font-size: 13px; color: #6B7280; }
+  .plan-price { text-align: right; }
+  .plan-price .amount { font-size: 22px; font-weight: 700; color: #2D6A4F; }
+  .plan-price .period { font-size: 12px; color: #9CA3AF; }
+  .plan-recommend {
+    position: absolute; top: -10px; right: 16px;
+    background: #E07A5F; color: #fff; font-size: 11px;
+    padding: 3px 10px; border-radius: 100px;
+  }
+  .plan-option-wrap { position: relative; }
+
+  /* ===== 订单确认 ===== */
+  .order-summary {
+    max-width: 560px; margin: 48px auto 0; background: #fff;
+    border-radius: 16px; padding: 32px; border: 1px solid rgba(0,0,0,0.06);
+  }
+  .order-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px dashed #E4E3DD; font-size: 14px; }
+  .order-row:last-child { border-bottom: none; font-weight: 700; font-size: 16px; padding-top: 20px; }
+  .order-label { color: #6B7280; }
+  .order-value { color: #1A1B1C; }
+
+  /* ===== 支付页 ===== */
+  .payment-methods { max-width: 480px; margin: 48px auto 0; }
+  .pay-method {
+    padding: 20px; background: #fff; border: 2px solid #E4E3DD; border-radius: 12px;
+    margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; gap: 16px; transition: all 0.2s;
+  }
+  .pay-method.selected { border-color: #2D6A4F; background: rgba(149,213,178,0.08); }
+  .pay-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .pay-wechat { background: #07C16015; }
+  .pay-alipay { background: #1677FF15; }
+  .pay-name { font-size: 15px; font-weight: 600; }
+  .pay-desc { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
+
+  /* ===== 个人中心布局 ===== */
+  .dashboard-layout { display: grid; grid-template-columns: 200px 1fr; gap: 32px; max-width: 1120px; margin: 0 auto; padding: 40px 24px; }
+  .sidebar { }
+  .sidebar-menu { list-style: none; }
+  .sidebar-menu li {
+    padding: 12px 16px; border-radius: 8px; font-size: 14px; color: #6B7280;
+    cursor: pointer; margin-bottom: 4px; transition: all 0.2s;
+  }
+  .sidebar-menu li:hover { background: rgba(0,0,0,0.04); color: #1A1B1C; }
+  .sidebar-menu li.active { background: #2D6A4F; color: #fff; font-weight: 500; }
+  .main-content { min-height: 400px; }
+
+  /* ===== 资产表格 ===== */
+  .asset-table { width: 100%; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06); }
+  .asset-table-header { display: grid; grid-template-columns: 2fr 2fr 1.5fr 1fr; padding: 14px 20px; background: #FAF9F6; font-size: 12px; font-weight: 600; color: #6B7280; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .asset-table-row { display: grid; grid-template-columns: 2fr 2fr 1.5fr 1fr; padding: 16px 20px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 14px; align-items: center; }
+  .asset-table-row:last-child { border-bottom: none; }
+  .asset-type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; background: rgba(149,213,178,0.2); color: #2D6A4F; }
+  .asset-action { color: #E07A5F; cursor: pointer; font-size: 13px; }
+
+  /* ===== 空状态 ===== */
+  .empty-state { text-align: center; padding: 60px 20px; color: #9CA3AF; }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-title { font-size: 16px; font-weight: 600; color: #6B7280; margin-bottom: 8px; }
+  .empty-desc { font-size: 13px; margin-bottom: 24px; }
+
+  /* ===== 订阅状态卡 ===== */
+  .subscription-card {
+    background: linear-gradient(135deg, #2D6A4F, #1B4332);
+    color: #fff; padding: 28px; border-radius: 16px; margin-bottom: 24px;
+  }
+  .sub-label { font-size: 12px; opacity: 0.7; margin-bottom: 8px; }
+  .sub-status { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+  .sub-detail { font-size: 13px; opacity: 0.8; line-height: 1.8; }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 768px) {
+    .nav-links a:not(.nav-cta) { display: none; }
+    .pricing-row { grid-template-columns: 1fr 1fr; }
+    .pricing-row .tier-name { grid-column: 1 / -1; }
+    .asset-grid { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-layout { grid-template-columns: 1fr; }
+    .sidebar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; }
+    .sidebar-menu { display: flex; gap: 8px; }
+    .sidebar-menu li { white-space: nowrap; margin-bottom: 0; }
+    .asset-table-header, .asset-table-row { grid-template-columns: 1.5fr 1.5fr 1fr; }
+    .asset-table-header div:last-child, .asset-table-row div:last-child { display: none; }
+    .hero { padding: 60px 0 40px; }
+    .section { padding: 60px 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 导航栏 ===== -->
+<nav id="navbar">
+  <div class="nav-inner">
+    <a href="#home" class="logo" data-page="home">留<span>白</span><span class="logo-sub">替你好好说再见</span></a>
+    <div class="nav-links">
+      <a href="#home" data-page="home">首页</a>
+      <a href="#services" data-page="services">托付方案</a>
+      <a href="#guide" data-page="guide">数字遗产指南</a>
+      <a href="#faq" data-page="faq">常见问题</a>
+      <a href="#login" data-page="login" class="nav-cta">免费开始</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ================================================== -->
+<!-- 页面：首页 -->
+<!-- ================================================== -->
+<div class="page active" id="page-home">
+
+  <section class="hero container">
+    <div class="hero-eyebrow">数字遗产托付服务</div>
+    <h1>别让你的数字资产<br>最终被埋没，<br>变成<em>爱的牵挂</em></h1>
+    <p>游戏账号、社交记录、照片视频、网盘文件……你走了之后，它们去哪？5分钟录入清单，我们替你执行。</p>
+    <div class="hero-actions">
+      <a href="#login" data-page="login" class="btn-primary">免费开始托管</a>
+      <a href="#services" data-page="services" class="btn-secondary">了解工作原理</a>
+    </div>
+  </section>
+
+  <section class="asset-wall container">
+    <div class="asset-grid">
+      <div class="asset-card reveal"><div class="asset-icon">📱</div><div class="asset-name">手机设备</div><div class="asset-desc">iPhone、安卓、平板、硬盘</div></div>
+      <div class="asset-card reveal"><div class="asset-icon">🎮</div><div class="asset-name">游戏账号</div><div class="asset-desc">装备、皮肤、账号等级</div></div>
+      <div class="asset-card reveal"><div class="asset-icon">🕹️</div><div class="asset-name">游戏设备</div><div class="asset-desc">PS5、Switch、手柄、VR</div></div>
+      <div class="asset-card reveal"><div class="asset-icon">📷</div><div class="asset-name">照片视频</div><div class="asset-desc">手机相册、网盘备份</div></div>
+      <div class="asset-card reveal"><div class="asset-icon">💬</div><div class="asset-name">社交账号</div><div class="asset-desc">微信、QQ、微博、小红书</div></div>
+      <div class="asset-card reveal"><div class="asset-icon">📺</div><div class="asset-name">自媒体账号</div><div class="asset-desc">B站、抖音、公众号</div></div>
+      <div class="asset-card reveal"><div class="asset-icon">✉️</div><div class="asset-name">邮箱账号</div><div class="asset-desc">Gmail、QQ邮箱、Outlook</div></div>
+      <div class="asset-card reveal"><div class="asset-icon">💰</div><div class="asset-name">数字钱包</div><div class="asset-desc">余额、虚拟货币、NFT</div></div>
+    </div>
+  </section>
+
+  <section class="section white">
+    <div class="container">
+      <div class="section-label reveal">为什么需要留白</div>
+      <h2 class="section-title reveal">三个你可能没想过的问题</h2>
+      <p class="section-subtitle reveal">数字时代，我们留下的数字痕迹比实物财产多得多。大多数人从来没想过这些东西将来怎么办。</p>
+      <div class="pain-grid">
+        <div class="pain-card reveal">
+          <div class="pain-num">01</div>
+          <div class="pain-title">家人不知道密码</div>
+          <div class="pain-text">你手机密码是什么？网盘密码呢？游戏账号呢？如果有一天你突然走了，家人要花多少时间才能找到这些？甚至根本找不到？</div>
+        </div>
+        <div class="pain-card reveal">
+          <div class="pain-num">02</div>
+          <div class="pain-title">不想被看到的内容</div>
+          <div class="pain-text">有些聊天记录、浏览历史、私人照片，你不希望家人在你走后翻到。你希望谁来删？什么时候删？</div>
+        </div>
+        <div class="pain-card reveal">
+          <div class="pain-num">03</div>
+          <div class="pain-title">值钱的东西被浪费</div>
+          <div class="pain-text">养了8年的游戏账号、几万粉的自媒体号、存了5年的照片云盘……如果没人接手，平台只会把它们清零。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-label reveal">工作原理</div>
+      <h2 class="section-title reveal">三步，安排好你的数字遗产</h2>
+      <p class="section-subtitle reveal">简单的流程，严格的安全机制。你只需要做第一步，剩下的交给我们。</p>
+      <div class="steps">
+        <div class="step reveal">
+          <div class="step-num">1</div>
+          <div class="step-icon">📝</div>
+          <div class="step-title">录入资产与规则</div>
+          <div class="step-text">添加你的数字资产，为每一项设置处置方式：删除、转交给指定人、或者变现。</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">2</div>
+          <div class="step-icon">✅</div>
+          <div class="step-title">定期确认"我还活着"</div>
+          <div class="step-text">我们每30天联系你一次，点一下确认即可。连续3次未响应，系统会进入失联判定流程。</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">3</div>
+          <div class="step-icon">⚙️</div>
+          <div class="step-title">按规则自动执行</div>
+          <div class="step-text">核验死亡证明、7天公示期后，我们按你设定的规则执行：注销、转交、清理、变现。全程留痕可查。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="trust-section">
+    <div class="container">
+      <div class="section-label" style="color:#95D5B2;">安全与信任</div>
+      <h2 class="section-title">你的数据安全吗？</h2>
+      <p class="section-subtitle">我们知道你把最私密的东西交给了我们。这是我们的承诺。</p>
+      <div class="trust-grid">
+        <div class="trust-item reveal">
+          <div class="trust-icon">🔐</div>
+          <div class="trust-title">端到端加密</div>
+          <div class="trust-text">密码端到端加密存储，只有通过您的手机短信验证，才可查看。</div>
+        </div>
+        <div class="trust-item reveal">
+          <div class="trust-icon">📋</div>
+          <div class="trust-title">全程留痕</div>
+          <div class="trust-text">每一次操作都有记录，可审计、可追溯。你随时可以查看执行日志。</div>
+        </div>
+        <div class="trust-item reveal">
+          <div class="trust-icon">🛡️</div>
+          <div class="trust-title">三层验证</div>
+          <div class="trust-text">连续未响应 + 紧急联系人确认 + 死亡证明核验，三层验证才启动执行，不会误触发。</div>
+        </div>
+        <div class="trust-item reveal">
+          <div class="trust-icon">↩️</div>
+          <div class="trust-title">随时可退</div>
+          <div class="trust-text">未开始执行前，车马费随时申请全额退。订阅费按剩余月份比例退。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section white">
+    <div class="container">
+      <div class="section-label reveal">我们提供什么</div>
+      <h2 class="section-title reveal">两层服务，各管一段</h2>
+      <p class="section-subtitle reveal">生前你自己用工具托管，身后我们帮你执行。两段分开，按需付费。</p>
+      <div class="product-grid">
+        <div class="product-card teal reveal">
+          <div class="product-badge">第一层 · 生前托管</div>
+          <div class="product-name">数字资产保险箱</div>
+          <div class="product-price"><b>¥329</b> / 年 · 约¥0.9/天</div>
+          <ul class="product-list">
+            <li>数字资产清单，不限项数，随时修改</li>
+            <li>密码端到端加密存储</li>
+            <li>不限指定受益人数量</li>
+            <li>每30天"我还活着"验证</li>
+            <li>失联自动判定流程</li>
+            <li>随时修改、随时取消</li>
+            <li>平台变更政策提醒</li>
+            <li>不给家人添负担，替你好好说再见</li>
+          </ul>
+        </div>
+        <div class="product-card coral reveal">
+          <div class="product-badge">第二层 · 身后执行</div>
+          <div class="product-name">执行车马费</div>
+          <div class="product-price"><b>¥500</b> 起 · 按居住地分档</div>
+          <ul class="product-list">
+            <li>死亡证明核验</li>
+            <li>社交账号注销/删除</li>
+            <li>网盘内容导出交付家属</li>
+            <li>上门设备清理/初始化</li>
+            <li>游戏号/自媒体变现协助</li>
+            <li>订阅/会员自动扣款关闭</li>
+            <li>《执行报告》全程留痕</li>
+            <li>家属线上交接培训</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="container">
+      <h2>5分钟，给你的数字遗产一个交代</h2>
+      <p>免费开始，随时可以取消。不用现在就决定一切，先把清单建起来。</p>
+      <a href="#login" data-page="login" class="btn-primary">免费开始托管</a>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：服务方案 -->
+<!-- ================================================== -->
+<div class="page" id="page-services">
+  <section class="hero container">
+    <div class="hero-eyebrow">托付方案</div>
+    <h1>两层服务，<br>生前托管 + <em>身后执行</em></h1>
+    <p>你自己用工具管理生前的数字资产，我们在你走后帮你把一切安排好。两段分开，按需付费。</p>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-label reveal">服务流程</div>
+      <h2 class="section-title reveal">从订阅到执行，一共几步？</h2>
+      <div class="steps" style="margin-top:48px;">
+        <div class="step reveal">
+          <div class="step-num">1</div>
+          <div class="step-icon">📝</div>
+          <div class="step-title">注册建档</div>
+          <div class="step-text">手机号注册，录入你的数字资产清单，设置每个资产的处置规则。</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">2</div>
+          <div class="step-icon">🔒</div>
+          <div class="step-title">订阅托管</div>
+          <div class="step-text">支付订阅费，密码加密存储，指定受益人。你随时可以修改。</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">3</div>
+          <div class="step-icon">✅</div>
+          <div class="step-title">定期确认</div>
+          <div class="step-text">每30天我们联系你一次，点一下"我还活着"。连续3次未响应进入预警。</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">4</div>
+          <div class="step-icon">🔍</div>
+          <div class="step-title">失联核验</div>
+          <div class="step-text">联系紧急联系人，提交死亡证明，核验通过，7天公示期。</div>
+        </div>
+        <div class="step reveal">
+          <div class="step-num">5</div>
+          <div class="step-icon">⚙️</div>
+          <div class="step-title">执行交付</div>
+          <div class="step-text">按你设定的规则执行，交付给受益人，出具执行报告。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section white">
+    <div class="container">
+      <div class="product-grid">
+        <div class="product-card teal reveal">
+          <div class="product-badge">第一层 · 生前托管</div>
+          <div class="product-name">数字资产保险箱</div>
+          <div class="product-price"><b>¥329</b> / 年 · 约¥0.9/天</div>
+          <ul class="product-list">
+            <li>数字资产清单，不限项数，随时修改</li>
+            <li>密码端到端加密存储</li>
+            <li>不限指定受益人数量</li>
+            <li>每30天"我还活着"验证</li>
+            <li>失联自动判定流程</li>
+            <li>随时修改、随时取消</li>
+            <li>平台变更政策提醒</li>
+            <li>不给家人添负担，替你好好说再见</li>
+          </ul>
+        </div>
+        <div class="product-card coral reveal">
+          <div class="product-badge">第二层 · 身后执行</div>
+          <div class="product-name">执行车马费</div>
+          <div class="product-price"><b>¥500</b> 起 · 按居住地分档</div>
+          <ul class="product-list">
+            <li>死亡证明核验</li>
+            <li>社交账号注销/删除</li>
+            <li>网盘内容导出交付家属</li>
+            <li>上门设备清理/初始化</li>
+            <li>游戏号/自媒体变现协助</li>
+            <li>订阅/会员自动扣款关闭</li>
+            <li>《执行报告》全程留痕</li>
+            <li>家属线上交接培训</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 费用包含 -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label reveal">费用包含</div>
+      <h2 class="section-title reveal">你付的每一分钱花在哪</h2>
+      <div class="pain-grid" style="margin-top:48px;">
+        <div class="pain-card reveal">
+          <div class="pain-title">订阅费¥329/年包含</div>
+          <div class="pain-text">
+            · 数字资产清单管理<br>
+            · 密码加密存储与保险<br>
+            · 失联自动判定系统<br>
+            · 受益人指定与预告知<br>
+            · 每30天"我还活着"提醒<br>
+            · 平台政策变更通知
+          </div>
+        </div>
+        <div class="pain-card reveal">
+          <div class="pain-title">车马费包含</div>
+          <div class="pain-text">
+            · 执行员人工费用<br>
+            · 上门交通与住宿<br>
+            · 账号远程交涉与操作<br>
+            · 设备清理与数据擦除<br>
+            · 《执行报告》制作<br>
+            · 家属交接培训
+          </div>
+        </div>
+        <div class="pain-card reveal">
+          <div class="pain-title">不包含</div>
+          <div class="pain-text">
+            · 游戏号变现佣金（另收5-10%）<br>
+            · 公证处公证费（实报实销）<br>
+            · 第二次上门费用<br>
+            · 家属额外需求（全屋整理等）<br>
+            · 情感留存服务（暂未上线）
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 免费开始引导 -->
+  <section class="final-cta">
+    <div class="container">
+      <h2>不确定选哪档？先免费开始</h2>
+      <p>不收费、不绑卡，先建你的数字资产清单。</p>
+      <a href="#login" data-page="login" class="btn-primary">免费开始托管</a>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：数字遗产指南 -->
+<!-- ================================================== -->
+<div class="page" id="page-guide">
+  <section class="hero container">
+    <div class="hero-eyebrow">数字遗产指南</div>
+    <h1>了解数字遗产，<br>从<em>这些文章</em>开始</h1>
+    <p>我们整理了关于数字遗产的常见问题、分平台指南和法律科普。先读几篇，再决定要不要用我们的服务。</p>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="guide-list">
+
+        <div class="guide-item reveal">
+          <div class="guide-header">
+            <div class="guide-cat">入门必读</div>
+            <div class="guide-title">什么是数字遗产？为什么年轻人要提前规划？</div>
+            <div class="guide-excerpt">从民法典127条说起，解释什么算数字遗产、为什么现在就要开始想、以及拖延的代价。</div>
+            <span class="faq-arrow" style="margin-top:8px;">▼</span>
+          </div>
+          <div class="guide-content">
+            <div style="padding:20px 24px;border-top:1px solid rgba(0,0,0,0.06);font-size:14px;color:#6B7280;line-height:1.8;">
+              <p style="margin-bottom:12px;">根据《民法典》第127条，法律对数据、网络虚拟财产的保护有规定的，依照其规定。这是我国首次在法律层面明确承认数字财产的地位。</p>
+              <p style="margin-bottom:12px;">但现实是，大多数人从来没想过自己的数字资产怎么办。你手机里的微信、游戏账号、照片云盘、订阅会员……如果有一天你突然走了，家人连密码都不知道。</p>
+              <p>年轻人立遗嘱的数量年增长42.3%，00后遗嘱里数字资产的占比超过80%。现在规划，不是因为你老了，而是因为你积累得足够多了。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-item reveal">
+          <div class="guide-header">
+            <div class="guide-cat">分平台指南</div>
+            <div class="guide-title">微信账号去世后怎么办？2026年最新流程</div>
+            <div class="guide-excerpt">微信/QQ零钱怎么继承？社交账号能注销吗？家属需要准备什么材料？</div>
+            <span class="faq-arrow" style="margin-top:8px;">▼</span>
+          </div>
+          <div class="guide-content">
+            <div style="padding:20px 24px;border-top:1px solid rgba(0,0,0,0.06);font-size:14px;color:#6B7280;line-height:1.8;">
+              <p style="margin-bottom:12px;"><b>零钱/理财通余额：</b>属于个人合法财产，家属可以凭死亡证明、亲属关系证明、身份证等材料，联系腾讯客服申请提取。</p>
+              <p style="margin-bottom:12px;"><b>社交账号本身：</b>微信账号的所有权属于腾讯，用户只有使用权。用户去世后，账号不能直接继承，但家属可以申请注销。</p>
+              <p><b>家属需要准备：</b>死亡证明、火化证明、户籍注销证明、亲属关系证明、申请人身份证。整个流程大概需要2-4周。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-item reveal">
+          <div class="guide-header">
+            <div class="guide-cat">分平台指南</div>
+            <div class="guide-title">游戏账号能继承吗？法院怎么判？</div>
+            <div class="guide-excerpt">从北京石景山87个游戏账号继承案说起，分析当前司法实践和平台规则的冲突。</div>
+            <span class="faq-arrow" style="margin-top:8px;">▼</span>
+          </div>
+          <div class="guide-content">
+            <div style="padding:20px 24px;border-top:1px solid rgba(0,0,0,0.06);font-size:14px;color:#6B7280;line-height:1.8;">
+              <p style="margin-bottom:12px;">2025年12月，最高人民法院新增"数据网络虚拟财产纠纷"独立案由，游戏账号继承正式成为独立的诉讼类型。</p>
+              <p style="margin-bottom:12px;">北京石景山法院曾审理过一起87个游戏账号继承案，最终判决：游戏账号属于虚拟财产，其财产价值部分可以继承，但账号使用权的转移需要看平台用户协议。</p>
+              <p>现实中最大的问题是：平台用户协议通常规定账号不得转让继承，法院的判决和平台规则之间存在冲突。这也是为什么需要提前规划——写清楚你希望怎么处理，比事后打官司靠谱得多。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-item reveal">
+          <div class="guide-header">
+            <div class="guide-cat">分平台指南</div>
+            <div class="guide-title">B站/抖音账号怎么处理？</div>
+            <div class="guide-excerpt">各大内容平台的逝者账号政策汇总，注销和删除的流程。</div>
+            <span class="faq-arrow" style="margin-top:8px;">▼</span>
+          </div>
+          <div class="guide-content">
+            <div style="padding:20px 24px;border-top:1px solid rgba(0,0,0,0.06);font-size:14px;color:#6B7280;line-height:1.8;">
+              <p style="margin-bottom:12px;"><b>B站：</b>家属可以申请逝者账号注销，需要提供死亡证明和亲属关系证明。也可以申请将账号内容导出交付给家属。</p>
+              <p style="margin-bottom:12px;"><b>抖音：</b>同样支持家属申请注销或内容导出。粉丝较多的账号还可以协助变现，收益按继承顺序分配。</p>
+              <p><b>公众号：</b>订阅号可以迁移到家属名下，需要提供原运营者的死亡证明和亲属关系证明。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-item reveal">
+          <div class="guide-header">
+            <div class="guide-cat">法律科普</div>
+            <div class="guide-title">数字遗嘱有法律效力吗？和传统遗嘱的区别</div>
+            <div class="guide-excerpt">电子遗嘱、公证遗嘱、自书遗嘱的效力对比，数字遗产应该写进哪种遗嘱？</div>
+            <span class="faq-arrow" style="margin-top:8px;">▼</span>
+          </div>
+          <div class="guide-content">
+            <div style="padding:20px 24px;border-top:1px solid rgba(0,0,0,0.06);font-size:14px;color:#6B7280;line-height:1.8;">
+              <p style="margin-bottom:12px;"><b>公证遗嘱：</b>效力最高，由公证处出具。数字资产也可以写进公证遗嘱里，但公证处通常不了解具体的平台规则。</p>
+              <p style="margin-bottom:12px;"><b>自书遗嘱：</b>自己写的遗嘱也有效力，但需要符合法定形式（亲笔书写、签名、注明年月日）。</p>
+              <p><b>电子遗嘱：</b>目前我国法律还没有明确承认电子遗嘱的效力，建议重要资产还是写进纸质遗嘱并公证。数字托管服务是辅助执行工具，不能替代正式遗嘱。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-item reveal">
+          <div class="guide-header">
+            <div class="guide-cat">实用工具</div>
+            <div class="guide-title">免费下载：个人数字资产整理清单模板</div>
+            <div class="guide-excerpt">照着这份清单列一遍，你会清楚自己有多少数字资产需要安排。不需要注册。</div>
+            <span class="faq-arrow" style="margin-top:8px;">▼</span>
+          </div>
+          <div class="guide-content">
+            <div style="padding:20px 24px;border-top:1px solid rgba(0,0,0,0.06);font-size:14px;color:#6B7280;line-height:1.8;">
+              <p style="margin-bottom:12px;">我们整理了一份《个人数字资产整理清单》，包含8大类资产的详细checklist：</p>
+              <p style="margin-bottom:8px;">📱 手机设备类：手机、平板、电脑、硬盘</p>
+              <p style="margin-bottom:8px;">🎮 游戏类：游戏账号、游戏设备</p>
+              <p style="margin-bottom:8px;">💬 社交类：微信、QQ、微博、小红书</p>
+              <p style="margin-bottom:8px;">📷 内容类：照片视频、网盘、自媒体</p>
+              <p style="margin-bottom:12px;">💰 资产类：数字钱包、订阅会员</p>
+              <p>下载方式：<a href="#" style="color:#2D6A4F;">点击下载PDF模板</a>（原型占位）</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+        </div>
+        <div class="guide-item reveal">
+          <div class="guide-cat">实用工具</div>
+          <div class="guide-title">免费下载：个人数字资产整理清单模板</div>
+          <div class="guide-excerpt">照着这份清单列一遍，你会清楚自己有多少数字资产需要安排。不需要注册。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：FAQ -->
+<!-- ================================================== -->
+<div class="page" id="page-faq">
+  <section class="hero container">
+    <div class="hero-eyebrow">常见问题</div>
+    <h1>你可能想问的<br><em>所有问题</em></h1>
+    <p>关于定价、服务流程、隐私安全、法律效力的常见疑问，都在这里。</p>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <div class="faq-question">
+            车马费真的会退吗？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            真的。车马费是预估值，执行完成后按实际票据结算：花得少差额退你，花得多提前征得家属同意再补。未发生上门服务的，全额退。
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            搬家了怎么办？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            联系客服更新居住地，重新计算车马费档位。从高价档搬到低价档，退差额；从低价档搬到高价档，补差额。订阅费不变。
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            怎么确认我真的去世了？会不会误触发？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            三层验证：① 连续3次（约90天）你没点"我还活着" ② 我们联系你的紧急联系人 ③ 提交死亡证明/公安销户信息。核验通过后才启动执行，还有7天公示期。误触发概率极低。
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            你们能看到我的密码吗？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            看不到。密码端到端加密存储，密钥分片保管。即使我们想打开，也需要多个授权+解密流程才能看到。执行时由指定执行人按流程解密，全程留痕。
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            这个服务有法律效力吗？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            我们是服务提供方，不是公证处。你写的处置意愿具有合同效力，但如果家属对资产分配有争议，最终以法院判决或公证书为准。我们建议重要资产同步立正式遗嘱。
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            游戏号变现成功，佣金怎么算？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            按实际成交金额的5-10%收佣金。我们不承诺一定卖出去，只协助对接合规交易平台。卖不出去不收佣金，账号按你的意愿转交或注销。
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            家属不配合怎么办？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            如果家属拒绝配合（比如不肯交设备、不肯签交接单），我们会暂停执行，把已完成部分的报告交付，剩余费用按比例退。我们不强制，也不卷入家庭纠纷。
+          </div></div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-question">
+            订阅费可以退吗？
+            <span class="faq-arrow">▼</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">
+            按剩余月份比例退。比如你付了一年¥329，用了3个月想退，退¥246（9个月×¥27.4）。车马费未发生全额退。
+          </div></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：预约咨询 -->
+<!-- ================================================== -->
+<div class="page" id="page-contact">
+  <section class="hero container">
+    <div class="hero-eyebrow">免费开始</div>
+    <h1>5分钟，<br><em>开始你的</em>数字遗产规划</h1>
+    <p>先留下联系方式，我们会在1个工作日内联系你。不需要现在就付费，先聊聊你的需求。</p>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="form-card reveal">
+        <form id="contactForm">
+          <div class="form-group">
+            <label class="form-label">怎么称呼你？</label>
+            <input type="text" class="form-input" placeholder="你的名字" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">手机号/微信号</label>
+            <input type="text" class="form-input" placeholder="方便联系你的方式" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">你目前居住的城市？</label>
+            <select class="form-select">
+              <option>杭州市内</option>
+              <option>浙江省内其他城市</option>
+              <option>华东地区（沪苏皖闽赣）</option>
+              <option>其他省份</option>
+              <option>还不确定</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">你最想安排什么？（可选）</label>
+            <textarea class="form-textarea" placeholder="比如：游戏账号、社交账号、照片云盘……"></textarea>
+          </div>
+          <button type="submit" class="form-submit">提交，免费咨询</button>
+        </form>
+        <div class="form-success" id="formSuccess">
+          <div class="form-success-icon">✅</div>
+          <div style="font-size:18px;font-weight:600;margin-bottom:8px;">提交成功！</div>
+          <div style="font-size:14px;color:#6B7280;">我们会在1个工作日内联系你。<br>不需要现在就付费，先聊聊你的需求。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：登录/注册 -->
+<!-- ================================================== -->
+<div class="page" id="page-login">
+  <section class="hero container">
+    <div class="hero-eyebrow">账号登录</div>
+    <h1>人生之画无需填满，<br>而是有选择地<em>留白</em></h1>
+    <p style="max-width:400px;">手机号验证登录，不用记密码。新用户自动注册。</p>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div class="form-card" style="max-width:420px;">
+        <div class="form-group">
+          <label class="form-label">手机号</label>
+          <input type="tel" class="form-input" placeholder="请输入手机号" maxlength="11">
+        </div>
+        <div class="form-group">
+          <label class="form-label">验证码</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" class="form-input" placeholder="6位验证码" maxlength="6" style="flex:1;">
+            <button type="button" class="btn-secondary" style="padding:12px 16px;font-size:13px;white-space:nowrap;" id="sendCodeBtn">发送验证码</button>
+          </div>
+        </div>
+        <button type="button" class="form-submit" style="margin-top:12px;" data-nav="onboarding">登录 / 注册</button>
+        <p style="text-align:center;font-size:12px;color:#9CA3AF;margin-top:16px;">
+          登录即代表同意《服务协议》和《隐私政策》
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：资产录入引导（Onboarding） -->
+<!-- ================================================== -->
+<div class="page" id="page-onboarding">
+  <section class="hero container">
+    <div class="hero-eyebrow">欢迎加入留白</div>
+    <h1>先花2分钟，<br>录入你的<em>第一项资产</em></h1>
+    <p>录入完成即赠送1个月免费试用。</p>
+    <div class="steps-bar">
+      <div class="step-item active"><div class="step-dot">1</div> 录入资产</div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-dot">2</div> 设处置规则</div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-dot">3</div> 完成</div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:40px;">
+    <div class="container">
+      <div class="form-card" style="max-width:600px;">
+
+        <!-- 资产1 -->
+        <div class="asset-group" style="border:1px solid #E4E3DD;border-radius:12px;padding:20px;margin-bottom:16px;position:relative;">
+          <button type="button" class="remove-asset" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:14px;">✕</button>
+          <div style="font-size:13px;font-weight:600;color:#2D6A4F;margin-bottom:12px;">资产 1</div>
+
+          <div class="form-group">
+            <label class="form-label">资产类型</label>
+            <select class="form-select asset-type-select">
+              <option>📱 手机设备</option>
+              <option>🎮 游戏账号</option>
+              <option>🕹️ 游戏设备</option>
+              <option>📷 照片视频</option>
+              <option>💬 社交账号</option>
+              <option>📺 自媒体账号</option>
+              <option>✉️ 邮箱账号</option>
+              <option>💰 数字钱包</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">账号/设备名称</label>
+            <input type="text" class="form-input" placeholder="比如：Steam · 我的账号">
+          </div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">我希望怎么处理它？</label>
+            <div style="display:grid;gap:8px;">
+              <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">
+                <input type="radio" name="action_1" value="delete" checked style="margin-top:3px;">
+                <div>
+                  <div style="font-size:14px;font-weight:500;">全部删除</div>
+                  <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">注销账号、清除数据，谁也看不到</div>
+                </div>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">
+                <input type="radio" name="action_1" value="transfer" style="margin-top:3px;">
+                <div>
+                  <div style="font-size:14px;font-weight:500;">转交给指定人</div>
+                  <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">账号、内容或资产移交给受益人</div>
+                </div>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">
+                <input type="radio" name="action_1" value="sell" style="margin-top:3px;">
+                <div>
+                  <div style="font-size:14px;font-weight:500;">变现后转交</div>
+                  <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">帮我卖掉，钱转给指定受益人</div>
+                </div>
+              </label>
+            </div>
+            <!-- 受益人表单（选转交/变现才显示） -->
+            <div class="beneficiary-form" style="display:none;margin-top:12px;padding:14px;background:rgba(149,213,178,0.1);border-radius:8px;">
+              <div style="font-size:12px;font-weight:600;color:#2D6A4F;margin-bottom:10px;">这个资产交给谁？</div>
+              <div class="form-group">
+                <label class="form-label">姓名</label>
+                <input type="text" class="form-input" placeholder="比如：张女士">
+              </div>
+              <div class="form-group">
+                <label class="form-label">与您的关系</label>
+                <select class="form-select">
+                  <option>母亲</option>
+                  <option>父亲</option>
+                  <option>配偶</option>
+                  <option>子女</option>
+                  <option>兄弟姐妹</option>
+                  <option>其他亲属</option>
+                  <option>朋友</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label">手机号</label>
+                <input type="tel" class="form-input" placeholder="方便联系的手机号">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 添加更多资产按钮 -->
+        <button type="button" id="addAssetBtn" style="width:100%;padding:14px;background:transparent;border:2px dashed #E4E3DD;border-radius:10px;color:#6B7280;font-size:14px;cursor:pointer;margin-bottom:24px;">
+          + 添加下一项资产
+        </button>
+
+        <button type="button" class="form-submit" data-nav="onboarding-success">保存，完成注册</button>
+        <p style="text-align:center;font-size:12px;color:#9CA3AF;margin-top:12px;">
+          录入完成即赠送1个月免费试用。
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：Onboarding 完成 -->
+<!-- ================================================== -->
+<div class="page" id="page-onboarding-success">
+  <section class="hero container" style="padding:100px 0 60px;">
+    <div class="form-success show" style="padding:0;">
+      <div class="form-success-icon">🎁</div>
+      <h2 style="font-size:28px;font-weight:700;margin-bottom:12px;">太棒了！已为你开通<br>1个月免费试用</h2>
+      <p style="color:#6B7280;max-width:440px;margin:0 auto 32px;line-height:1.7;">
+        你的第一项数字资产已经录入完成。<br>
+        试用期内全部功能免费使用，到期前我们会提醒你。<br>
+        没有自动扣费。
+      </p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="#dashboard" data-page="dashboard" class="btn-primary">进入个人中心</a>
+        <a href="#home" data-page="home" class="btn-secondary">先去逛逛首页</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：升级订阅·选择方案 -->
+<!-- ================================================== -->
+<div class="page" id="page-plans">
+  <section class="hero container">
+    <div class="hero-eyebrow">升级订阅</div>
+    <h1>正式订阅，<br>¥329/年 · <em>约¥0.9/天</em></h1>
+    <p>试用期结束后继续使用，一次付一年。车马费后面需要上门时再预存。</p>
+    <div class="steps-bar">
+      <div class="step-item active"><div class="step-dot">1</div> 选择方案</div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-dot">2</div> 确认订单</div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-dot">3</div> 支付</div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:40px;">
+    <div class="container">
+      <div class="plan-options">
+
+        <div class="plan-option-wrap">
+          <div class="plan-option" data-plan="subscription-only" data-price="329">
+            <div class="plan-left">
+              <h3>仅订阅费</h3>
+              <p>¥329/年，先用起来。后面需要上门执行时，再根据居住地单独预存车马费。</p>
+            </div>
+            <div class="plan-price">
+              <div class="amount">¥329</div>
+              <div class="period">/ 年</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="plan-option-wrap">
+          <div class="plan-recommend">一步到位</div>
+          <div class="plan-option selected" data-plan="bundle" data-price="829">
+            <div class="plan-left">
+              <h3>订阅费 + 车马费</h3>
+              <p>一次付完，省得后面再操作。订阅费每年付，车马费只收一次、未执行前可退。</p>
+            </div>
+            <div class="plan-price">
+              <div class="amount">¥329<small style="font-size:14px;font-weight:400;">/年</small> + ¥500<small style="font-size:14px;font-weight:400;">一次性</small></div>
+              <div class="period">首年合计 ¥829</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 车马费地区选择（选了"订阅费+车马费"后展开） -->
+        <div id="regionSelector" style="background:#FAF9F6;border:1px solid #E4E3DD;border-radius:12px;padding:20px;margin-top:-12px;">
+          <div style="font-size:14px;font-weight:600;margin-bottom:14px;">你的居住地</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+            <select class="form-select" id="provinceSelect">
+              <option value="zhejiang">浙江省</option>
+              <option value="huadong">华东周边（沪苏皖闽赣）</option>
+              <option value="other">其他省份</option>
+            </select>
+            <select class="form-select" disabled>
+              <option>选择城市</option>
+            </select>
+            <select class="form-select" disabled>
+              <option>选择区县</option>
+            </select>
+          </div>
+          <div id="pricePreview" style="margin-top:16px;padding:12px;background:#fff;border-radius:8px;font-size:14px;line-height:1.8;">
+            浙江省：订阅费 <b>¥329/年</b> + 车马费 <b>¥500</b>（一次性，可退）<br>
+            首年合计 <b>¥829</b>
+          </div>
+        </div>
+
+        <button type="button" class="form-submit" style="margin-top:24px;" data-nav="checkout">下一步：确认订单</button>
+        <p style="text-align:center;font-size:12px;color:#9CA3AF;margin-top:12px;">
+          车马费仅收一次，不是每年都收。未发生执行前可随时全额退。订阅费按剩余月份比例退。
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：确认订单 -->
+<!-- ================================================== -->
+<div class="page" id="page-checkout">
+  <section class="hero container">
+    <div class="hero-eyebrow">确认订单</div>
+    <h1>确认一下，<br>把它们<em>托付给留白</em></h1>
+    <div class="steps-bar">
+      <div class="step-item done"><div class="step-dot">✓</div> 选择方案</div>
+      <div class="step-line"></div>
+      <div class="step-item active"><div class="step-dot">2</div> 确认订单</div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-dot">3</div> 支付</div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:40px;">
+    <div class="container">
+      <div class="order-summary">
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;">订单明细</h3>
+        <div class="order-row">
+          <span class="order-label">方案</span>
+          <span class="order-value">数字资产保险箱 · 年订阅</span>
+        </div>
+        <div class="order-row">
+          <span class="order-label">订阅费（年付）</span>
+          <span class="order-value">¥329.00</span>
+        </div>
+        <div class="order-row">
+          <span class="order-label">合计</span>
+          <span class="order-value">¥329.00</span>
+        </div>
+      </div>
+      <div style="max-width:560px;margin:24px auto 0;">
+        <button type="button" class="form-submit" data-nav="payment">去支付 ¥329.00</button>
+        <p style="text-align:center;font-size:12px;color:#9CA3AF;margin-top:12px;">
+          点击支付即代表同意《服务协议》。订阅费按剩余月份比例退。
+        </p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：支付 -->
+<!-- ================================================== -->
+<div class="page" id="page-payment">
+  <section class="hero container">
+    <div class="hero-eyebrow">支付</div>
+    <h1>选择支付方式</h1>
+    <div class="steps-bar">
+      <div class="step-item done"><div class="step-dot">✓</div> 选择方案</div>
+      <div class="step-line"></div>
+      <div class="step-item done"><div class="step-dot">✓</div> 确认订单</div>
+      <div class="step-line"></div>
+      <div class="step-item active"><div class="step-dot">3</div> 支付</div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:40px;">
+    <div class="container">
+      <div class="payment-methods">
+        <div class="pay-method selected" data-method="wechat">
+          <div class="pay-icon pay-wechat">💬</div>
+          <div>
+            <div class="pay-name">微信支付</div>
+            <div class="pay-desc">推荐使用，扫码支付最快</div>
+          </div>
+        </div>
+        <div class="pay-method" data-method="alipay">
+          <div class="pay-icon pay-alipay">🅰️</div>
+          <div>
+            <div class="pay-name">支付宝</div>
+            <div class="pay-desc">支持花呗、余额宝</div>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin:32px 0;padding:24px;background:#fff;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
+          <div style="width:160px;height:160px;background:#FAF9F6;border-radius:8px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:13px;border:2px dashed #E4E3DD;">
+            支付二维码<br>（模拟）
+          </div>
+          <div style="font-size:14px;color:#6B7280;">请使用微信扫码支付</div>
+          <div style="font-size:20px;font-weight:700;color:#1A1B1C;margin-top:8px;">¥329.00</div>
+        </div>
+
+        <button type="button" class="form-submit" data-nav="payment-success">我已支付完成（模拟）</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：支付成功 -->
+<!-- ================================================== -->
+<div class="page" id="page-payment-success">
+  <section class="hero container" style="padding:100px 0 60px;">
+    <div class="form-success show" style="padding:0;">
+      <div class="form-success-icon">🎉</div>
+      <h2 style="font-size:28px;font-weight:700;margin-bottom:12px;">订阅成功！</h2>
+      <p style="color:#6B7280;max-width:400px;margin:0 auto 32px;">
+        恭喜你成为正式订阅用户，所有功能已开通。去个人中心看看你的资产清单吧。
+      </p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+        <a href="#dashboard" data-page="dashboard" class="btn-primary">进入个人中心</a>
+        <a href="#home" data-page="home" class="btn-secondary">返回首页</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：个人中心（仪表盘） -->
+<!-- ================================================== -->
+<div class="page" id="page-dashboard">
+  <div class="dashboard-layout">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="active" data-sidebar="dashboard">概览</li>
+        <li data-sidebar="assets">资产清单</li>
+        <li data-sidebar="subscription">订阅状态</li>
+        <li data-sidebar="settings">账号设置</li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px;">早上好，欢迎回来</h2>
+
+      <div class="subscription-card">
+        <div class="sub-label">当前状态</div>
+        <div class="sub-status">🎁 免费试用 · 剩余 30 天</div>
+        <div class="sub-detail">
+          试用期到期：2026-11-08<br>
+          已录入资产：1 项 · 已指定受益人：未设置<br>
+          <button class="btn-primary" style="margin-top:12px;padding:8px 20px;font-size:13px;background:rgba(255,255,255,0.2);" data-nav="plans">升级为正式订阅 →</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+        <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
+          <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">数字资产</div>
+          <div style="font-size:24px;font-weight:700;">3 项</div>
+        </div>
+        <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
+          <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">指定受益人</div>
+          <div style="font-size:24px;font-weight:700;">1 人</div>
+        </div>
+        <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid rgba(0,0,0,0.06);">
+          <div style="font-size:12px;color:#9CA3AF;margin-bottom:4px;">下次确认</div>
+          <div style="font-size:24px;font-weight:700;">89 天后</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：资产清单 -->
+<!-- ================================================== -->
+<div class="page" id="page-assets">
+  <div class="dashboard-layout">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li data-sidebar="dashboard">概览</li>
+        <li class="active" data-sidebar="assets">资产清单</li>
+        <li data-sidebar="subscription">订阅状态</li>
+        <li data-sidebar="settings">账号设置</li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <h2 style="font-size:24px;font-weight:700;">我的数字资产</h2>
+        <button class="btn-primary" id="addAssetTopBtn" style="padding:10px 20px;font-size:14px;">+ 添加资产</button>
+      </div>
+
+      <!-- 添加/编辑资产表单（默认隐藏） -->
+      <div id="assetFormPanel" style="display:none;background:#FAF9F6;border:1px solid #E4E3DD;border-radius:12px;padding:24px;margin-bottom:24px;">
+        <div style="font-size:15px;font-weight:600;margin-bottom:16px;" id="assetFormTitle">添加新资产</div>
+
+        <div class="form-group">
+          <label class="form-label">资产类型</label>
+          <select class="form-select">
+            <option>📱 手机设备</option>
+            <option>🎮 游戏账号</option>
+            <option>🕹️ 游戏设备</option>
+            <option>📷 照片视频</option>
+            <option>💬 社交账号</option>
+            <option>📺 自媒体账号</option>
+            <option>✉️ 邮箱账号</option>
+            <option>💰 数字钱包</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">账号/设备名称</label>
+          <input type="text" class="form-input" placeholder="比如：Steam · 我的账号">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">我希望怎么处理它？</label>
+          <div style="display:grid;gap:8px;">
+            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#fff;border-radius:8px;cursor:pointer;">
+              <input type="radio" name="dashboard_action" checked style="margin-top:3px;">
+              <div>
+                <div style="font-size:14px;font-weight:500;">全部删除</div>
+                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">注销账号、清除数据，谁也看不到</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#fff;border-radius:8px;cursor:pointer;">
+              <input type="radio" name="dashboard_action" style="margin-top:3px;">
+              <div>
+                <div style="font-size:14px;font-weight:500;">转交给指定人</div>
+                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">账号、内容或资产移交给受益人</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#fff;border-radius:8px;cursor:pointer;">
+              <input type="radio" name="dashboard_action" style="margin-top:3px;">
+              <div>
+                <div style="font-size:14px;font-weight:500;">变现后转交</div>
+                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">帮我卖掉，钱转给指定受益人</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:16px;">
+          <button class="btn-primary" style="flex:1;padding:10px;font-size:14px;">保存</button>
+          <button class="btn-secondary" style="flex:1;padding:10px;font-size:14px;" id="cancelAssetForm">取消</button>
+        </div>
+      </div>
+
+      <!-- 资产表格 -->
+      <div class="asset-table">
+        <div class="asset-table-header">
+          <div>资产类型</div>
+          <div>账号/设备</div>
+          <div>处置方式</div>
+          <div>操作</div>
+        </div>
+        <div class="asset-table-row asset-row">
+          <div><span class="asset-type-badge">游戏账号</span></div>
+          <div>Steam · 我的账号</div>
+          <div>变现后转交</div>
+          <div style="display:flex;gap:12px;">
+            <span class="asset-action edit-asset">编辑</span>
+            <span class="asset-action delete-asset" style="color:#EA6668;">删除</span>
+          </div>
+        </div>
+        <div class="asset-table-row asset-row">
+          <div><span class="asset-type-badge">社交账号</span></div>
+          <div>微信 · 我的微信号</div>
+          <div>全部删除</div>
+          <div style="display:flex;gap:12px;">
+            <span class="asset-action edit-asset">编辑</span>
+            <span class="asset-action delete-asset" style="color:#EA6668;">删除</span>
+          </div>
+        </div>
+        <div class="asset-table-row asset-row">
+          <div><span class="asset-type-badge">照片视频</span></div>
+          <div>百度网盘 · 备份相册</div>
+          <div>转交给指定人</div>
+          <div style="display:flex;gap:12px;">
+            <span class="asset-action edit-asset">编辑</span>
+            <span class="asset-action delete-asset" style="color:#EA6668;">删除</span>
+          </div>
+        </div>
+      </div>
+
+      <p style="font-size:13px;color:#9CA3AF;margin-top:20px;">
+        * 密码已端到端加密存储，只有你本人和执行时的授权执行人能看到。
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 页面：账号设置 -->
+<!-- ================================================== -->
+<div class="page" id="page-settings">
+  <div class="dashboard-layout">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li data-sidebar="dashboard">概览</li>
+        <li data-sidebar="assets">资产清单</li>
+        <li data-sidebar="subscription">订阅状态</li>
+        <li class="active" data-sidebar="settings">账号设置</li>
+      </ul>
+    </div>
+    <div class="main-content">
+      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px;">账号设置</h2>
+
+      <!-- 基本信息 -->
+      <div class="form-card" style="margin:0 0 24px;max-width:560px;">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:20px;">基本信息</h3>
+
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+          <div style="width:56px;height:56px;background:rgba(149,213,178,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>
+          <div>
+            <div style="font-size:16px;font-weight:600;">我的昵称</div>
+            <div style="font-size:13px;color:#9CA3AF;margin-top:2px;">手机号 138****8888</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">昵称</label>
+          <input type="text" class="form-input" value="我的昵称">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">联系邮箱（用于重要通知）</label>
+          <input type="email" class="form-input" placeholder="可选，填写后重要通知会同时发邮件">
+        </div>
+
+        <div style="border-top:1px dashed #E4E3DD;margin:20px 0;"></div>
+
+        <div style="font-size:14px;font-weight:600;margin-bottom:12px;color:#1A1B1C;">紧急联系人</div>
+        <p style="font-size:12px;color:#9CA3AF;margin-bottom:16px;">当你连续多次未确认"我还活着"时，我们会联系这位紧急联系人。</p>
+
+        <div class="form-group">
+          <label class="form-label">姓名</label>
+          <input type="text" class="form-input" placeholder="比如：张女士">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">与您的关系</label>
+          <select class="form-select">
+            <option>母亲</option>
+            <option>父亲</option>
+            <option>配偶</option>
+            <option>子女</option>
+            <option>兄弟姐妹</option>
+            <option>其他亲属</option>
+            <option>朋友</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">手机号</label>
+          <input type="tel" class="form-input" placeholder="紧急联系人的手机号">
+        </div>
+
+        <button class="btn-primary" style="width:auto;padding:10px 24px;font-size:14px;margin-top:8px;">保存修改</button>
+      </div>
+
+      <!-- 关联社交账号 -->
+      <div class="form-card" style="margin:0;max-width:560px;">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;">关联社交账号</h3>
+        <p style="font-size:13px;color:#9CA3AF;margin-bottom:20px;">选填。关联后我们可以更方便地帮你处理这些账号的身后事。</p>
+
+        <div class="form-group">
+          <label class="form-label">微信</label>
+          <input type="text" class="form-input" placeholder="微信号（选填）">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">微博</label>
+          <input type="text" class="form-input" placeholder="微博昵称/ID（选填）">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">QQ</label>
+          <input type="text" class="form-input" placeholder="QQ号（选填）">
+        </div>
+
+        <button class="btn-primary" style="width:auto;padding:10px 24px;font-size:14px;margin-top:8px;">保存关联</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 页脚 ===== -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-links">
+      <a data-page="services">托付方案</a>
+      <a data-page="guide">数字遗产指南</a>
+      <a data-page="faq">常见问题</a>
+      <a data-page="login">免费开始</a>
+    </div>
+    <div class="footer-copy">
+      © 2026 留白 Liubai · 替你好好说再见 · 浙ICP备XXXXXXXX号<br>
+      我们不提供法律咨询、心理咨询或遗嘱公证服务。重要资产请同步立正式遗嘱。
+    </div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  // ===== 页面路由 =====
+  var pages = document.querySelectorAll('.page');
+  var navLinks = document.querySelectorAll('[data-page]');
+
+  function showPage(pageId) {
+    pages.forEach(function(p) { p.classList.remove('active'); });
+    var target = document.getElementById('page-' + pageId);
+    if (target) {
+      target.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(function() {
+        target.querySelectorAll('.reveal').forEach(function(el) {
+          el.classList.add('visible');
+        });
+      }, 100);
+    }
+    navLinks.forEach(function(link) {
+      link.classList.toggle('active', link.getAttribute('data-page') === pageId);
+    });
+  }
+
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var page = this.getAttribute('data-page');
+      showPage(page);
+      history.pushState(null, '', '#' + page);
+    });
+  });
+
+  var initialHash = window.location.hash.replace('#', '');
+  if (initialHash && document.getElementById('page-' + initialHash)) {
+    showPage(initialHash);
+  }
+
+  // ===== 导航栏滚动效果 =====
+  var navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 20) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  // ===== FAQ 手风琴 =====
+  document.querySelectorAll('.faq-item').forEach(function(item) {
+    var question = item.querySelector('.faq-question');
+    question.addEventListener('click', function() {
+      item.classList.toggle('open');
+    });
+  });
+
+  // ===== 表单提交 =====
+  var form = document.getElementById('contactForm');
+  var success = document.getElementById('formSuccess');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      form.style.display = 'none';
+      success.classList.add('show');
+    });
+  }
+
+  // ===== 滚动渐入 =====
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(function(el) {
+    observer.observe(el);
+  });
+
+  // ===== 指南文章手风琴 =====
+  document.querySelectorAll('.guide-header').forEach(function(header) {
+    header.addEventListener('click', function() {
+      var item = this.closest('.guide-item');
+      item.classList.toggle('open');
+    });
+  });
+
+  // ===== data-nav 按钮导航 =====
+  document.querySelectorAll('[data-nav]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = this.getAttribute('data-nav');
+      showPage(target);
+      history.pushState(null, '', '#' + target);
+    });
+  });
+
+  // ===== 发送验证码倒计时 =====
+  var sendCodeBtn = document.getElementById('sendCodeBtn');
+  if (sendCodeBtn) {
+    sendCodeBtn.addEventListener('click', function() {
+      var count = 60;
+      var originalText = '发送验证码';
+      this.disabled = true;
+      var timer = setInterval(function() {
+        sendCodeBtn.textContent = count + 's 后重发';
+        count--;
+        if (count < 0) {
+          clearInterval(timer);
+          sendCodeBtn.textContent = originalText;
+          sendCodeBtn.disabled = false;
+        }
+      }, 1000);
+    });
+  }
+
+  // ===== 计划选择 =====
+  document.querySelectorAll('.plan-option').forEach(function(option) {
+    option.addEventListener('click', function() {
+      document.querySelectorAll('.plan-option').forEach(function(o) {
+        o.classList.remove('selected');
+      });
+      this.classList.add('selected');
+    });
+  });
+
+  // ===== 侧边栏菜单切换 =====
+  document.querySelectorAll('.sidebar-menu li').forEach(function(item) {
+    item.addEventListener('click', function() {
+      var target = this.getAttribute('data-sidebar');
+      showPage(target);
+      history.pushState(null, '', '#' + target);
+    });
+  });
+
+  // ===== 支付方式选择 =====
+  document.querySelectorAll('.pay-method').forEach(function(method) {
+    method.addEventListener('click', function() {
+      document.querySelectorAll('.pay-method').forEach(function(m) {
+        m.classList.remove('selected');
+      });
+      this.classList.add('selected');
+    });
+  });
+
+  // ===== 资产类型选择 =====
+  document.querySelectorAll('.asset-type-option').forEach(function(option) {
+    option.addEventListener('click', function() {
+      document.querySelectorAll('.asset-type-option').forEach(function(o) {
+        o.style.borderColor = '#E4E3DD';
+        o.classList.remove('selected');
+      });
+      this.style.borderColor = '#2D6A4F';
+      this.classList.add('selected');
+    });
+  });
+
+  // ===== 添加/删除资产组 =====
+  var addAssetBtn = document.getElementById('addAssetBtn');
+  var assetCount = 1;
+
+  if (addAssetBtn) {
+    addAssetBtn.addEventListener('click', function() {
+      assetCount++;
+      var newGroup = document.createElement('div');
+      newGroup.className = 'asset-group';
+      newGroup.style.cssText = 'border:1px solid #E4E3DD;border-radius:12px;padding:20px;margin-bottom:16px;position:relative;';
+      newGroup.innerHTML = '\n        <button type="button" class="remove-asset" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:14px;">✕</button>\n        <div style="font-size:13px;font-weight:600;color:#2D6A4F;margin-bottom:12px;">资产 ' + assetCount + '</div>\n        <div class="form-group">\n          <label class="form-label">资产类型</label>\n          <select class="form-select">\n            <option>📱 手机设备</option>\n            <option>🎮 游戏账号</option>\n            <option>🕹️ 游戏设备</option>\n            <option>📷 照片视频</option>\n            <option>💬 社交账号</option>\n            <option>📺 自媒体账号</option>\n            <option>✉️ 邮箱账号</option>\n            <option>💰 数字钱包</option>\n          </select>\n        </div>\n        <div class="form-group">\n          <label class="form-label">账号/设备名称</label>\n          <input type="text" class="form-input" placeholder="比如：Steam · 我的账号">\n        </div>\n        <div class="form-group" style="margin-bottom:0;">\n          <label class="form-label">我希望怎么处理它？</label>\n          <div style="display:grid;gap:8px;">\n            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">\n              <input type="radio" name="action_' + assetCount + '" checked style="margin-top:3px;">\n              <div>\n                <div style="font-size:14px;font-weight:500;">全部删除</div>\n                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">注销账号、清除数据，谁也看不到</div>\n              </div>\n            </label>\n            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">\n              <input type="radio" name="action_' + assetCount + '" style="margin-top:3px;">\n              <div>\n                <div style="font-size:14px;font-weight:500;">转交给指定人</div>\n                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">账号、内容或资产移交给受益人</div>\n              </div>\n            </label>\n            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">\n              <input type="radio" name="action_' + assetCount + '" style="margin-top:3px;">\n              <div>\n                <div style="font-size:14px;font-weight:500;">变现后转交</div>\n                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">帮我卖掉，钱转给指定受益人</div>\n              </div>\n            </label>\n          </div>\n        </div>';
+      this.parentNode.insertBefore(newGroup, this);
+      
+      // 绑定删除按钮
+      newGroup.querySelector('.remove-asset').addEventListener('click', function() {
+        newGroup.remove();
+      });
+    });
+  }
+
+  // 初始的删除按钮
+  document.querySelectorAll('.remove-asset').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      this.closest('.asset-group').remove();
+    });
+  });
+
+  // ===== 处置方式切换受益人表单 =====
+  function setupActionRadios(container) {
+    var radios = container.querySelectorAll('input[type=radio][name^="action_"]');
+    var beneficiaryForm = container.querySelector('.beneficiary-form');
+    if (!radios.length || !beneficiaryForm) return;
+    
+    radios.forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        if (this.value === 'transfer' || this.value === 'sell') {
+          beneficiaryForm.style.display = 'block';
+        } else {
+          beneficiaryForm.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // 初始化第一个资产组
+  var firstGroup = document.querySelector('.asset-group');
+  if (firstGroup) setupActionRadios(firstGroup);
+
+  // 修改动态添加资产的模板，加上受益人表单
+  var origAddClick = addAssetBtn.onclick;
+  // 重新绑定添加逻辑
+  addAssetBtn.onclick = null;
+  addAssetBtn.addEventListener('click', function() {
+    assetCount++;
+    var newGroup = document.createElement('div');
+    newGroup.className = 'asset-group';
+    newGroup.style.cssText = 'border:1px solid #E4E3DD;border-radius:12px;padding:20px;margin-bottom:16px;position:relative;';
+    newGroup.innerHTML = '\n        <button type="button" class="remove-asset" style="position:absolute;top:12px;right:12px;background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:14px;">✕</button>\n        <div style="font-size:13px;font-weight:600;color:#2D6A4F;margin-bottom:12px;">资产 ' + assetCount + '</div>\n        <div class="form-group">\n          <label class="form-label">资产类型</label>\n          <select class="form-select">\n            <option>📱 手机设备</option>\n            <option>🎮 游戏账号</option>\n            <option>🕹️ 游戏设备</option>\n            <option>📷 照片视频</option>\n            <option>💬 社交账号</option>\n            <option>📺 自媒体账号</option>\n            <option>✉️ 邮箱账号</option>\n            <option>💰 数字钱包</option>\n          </select>\n        </div>\n        <div class="form-group">\n          <label class="form-label">账号/设备名称</label>\n          <input type="text" class="form-input" placeholder="比如：Steam · 我的账号">\n        </div>\n        <div class="form-group" style="margin-bottom:0;">\n          <label class="form-label">我希望怎么处理它？</label>\n          <div style="display:grid;gap:8px;">\n            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">\n              <input type="radio" name="action_' + assetCount + '" value="delete" checked style="margin-top:3px;">\n              <div>\n                <div style="font-size:14px;font-weight:500;">全部删除</div>\n                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">注销账号、清除数据，谁也看不到</div>\n              </div>\n            </label>\n            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">\n              <input type="radio" name="action_' + assetCount + '" value="transfer" style="margin-top:3px;">\n              <div>\n                <div style="font-size:14px;font-weight:500;">转交给指定人</div>\n                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">账号、内容或资产移交给受益人</div>\n              </div>\n            </label>\n            <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#FAF9F6;border-radius:8px;cursor:pointer;">\n              <input type="radio" name="action_' + assetCount + '" value="sell" style="margin-top:3px;">\n              <div>\n                <div style="font-size:14px;font-weight:500;">变现后转交</div>\n                <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">帮我卖掉，钱转给指定受益人</div>\n              </div>\n            </label>\n          </div>\n          <div class="beneficiary-form" style="display:none;margin-top:12px;padding:14px;background:rgba(149,213,178,0.1);border-radius:8px;">\n            <div style="font-size:12px;font-weight:600;color:#2D6A4F;margin-bottom:10px;">这个资产交给谁？</div>\n            <div class="form-group">\n              <label class="form-label">姓名</label>\n              <input type="text" class="form-input" placeholder="比如：张女士">\n            </div>\n            <div class="form-group">\n              <label class="form-label">与您的关系</label>\n              <select class="form-select">\n                <option>母亲</option>\n                <option>父亲</option>\n                <option>配偶</option>\n                <option>子女</option>\n                <option>兄弟姐妹</option>\n                <option>其他亲属</option>\n                <option>朋友</option>\n              </select>\n            </div>\n            <div class="form-group" style="margin-bottom:0;">\n              <label class="form-label">手机号</label>\n              <input type="tel" class="form-input" placeholder="方便联系的手机号">\n            </div>\n          </div>\n        </div>';
+    this.parentNode.insertBefore(newGroup, this);
+    
+    // 绑定删除按钮
+    newGroup.querySelector('.remove-asset').addEventListener('click', function() {
+      newGroup.remove();
+    });
+    
+    // 绑定radio切换
+    setupActionRadios(newGroup);
+  });
+
+  // ===== 资产清单页交互 =====
+  var addAssetTopBtn = document.getElementById('addAssetTopBtn');
+  var assetFormPanel = document.getElementById('assetFormPanel');
+  var assetFormTitle = document.getElementById('assetFormTitle');
+  var cancelAssetForm = document.getElementById('cancelAssetForm');
+
+  if (addAssetTopBtn && assetFormPanel) {
+    addAssetTopBtn.addEventListener('click', function() {
+      assetFormTitle.textContent = '添加新资产';
+      assetFormPanel.style.display = 'block';
+      assetFormPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  if (cancelAssetForm && assetFormPanel) {
+    cancelAssetForm.addEventListener('click', function() {
+      assetFormPanel.style.display = 'none';
+    });
+  }
+
+  // 编辑资产
+  document.querySelectorAll('.edit-asset').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var row = this.closest('.asset-row');
+      var name = row.querySelector('div:nth-child(2)').textContent;
+      assetFormTitle.textContent = '编辑：' + name;
+      assetFormPanel.style.display = 'block';
+      assetFormPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // 删除资产
+  document.querySelectorAll('.delete-asset').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var row = this.closest('.asset-row');
+      var name = row.querySelector('div:nth-child(2)').textContent;
+      if (confirm('确定要删除「' + name + '」吗？')) {
+        row.remove();
+      }
+    });
+  });
+
+  // ===== 订阅方案页交互 =====
+  var planOptions = document.querySelectorAll('#page-plans .plan-option');
+  var regionSelector = document.getElementById('regionSelector');
+  var provinceSelect = document.getElementById('provinceSelect');
+  var pricePreview = document.getElementById('pricePreview');
+
+  if (planOptions.length && regionSelector) {
+    planOptions.forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        planOptions.forEach(function(o) { o.classList.remove('selected'); });
+        opt.classList.add('selected');
+
+        var plan = opt.getAttribute('data-plan');
+        if (plan === 'bundle') {
+          regionSelector.style.display = 'block';
+        } else {
+          regionSelector.style.display = 'none';
+        }
+      });
+    });
+  }
+
+  // 切换省份，更新价格预览
+  if (provinceSelect && pricePreview) {
+    provinceSelect.addEventListener('change', function() {
+      var val = this.value;
+      var text = this.options[this.selectedIndex].text;
+      var fee = 500;
+      if (val === 'huadong') fee = 800;
+      if (val === 'other') fee = 1500;
+      var total = 329 + fee;
+      pricePreview.innerHTML = text + '：订阅费 <b>¥329/年</b> + 车马费 <b>¥' + fee + '</b>（一次性，可退）<br>首年合计 <b>¥' + total + '</b>';
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
