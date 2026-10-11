@@ -444,7 +444,7 @@
         <div class="trust-item reveal">
           <div class="trust-icon">🔐</div>
           <div class="trust-title">端到端加密</div>
-          <div class="trust-text">密码端到端加密存储，只有通过您的手机短信验证，才可查看。</div>
+          <div class="trust-text">密码端到端加密存储，只有通过您的邮箱验证，才可查看。</div>
         </div>
         <div class="trust-item reveal">
           <div class="trust-icon">📋</div>
@@ -533,7 +533,7 @@
           <div class="step-num">1</div>
           <div class="step-icon">📝</div>
           <div class="step-title">注册建档</div>
-          <div class="step-text">手机号注册，录入你的数字资产清单，设置每个资产的处置规则。</div>
+          <div class="step-text">邮箱注册，录入你的数字资产清单，设置每个资产的处置规则。</div>
         </div>
         <div class="step reveal">
           <div class="step-num">2</div>
@@ -1942,17 +1942,30 @@
         const { data, error } = result;
         if (error) throw error;
 
+        // 检查是否真的有 session
+        const user = window.supabase.auth.currentUser;
+
+        if (!user) {
+          // 没有 session，说明需要邮箱验证
+          showAuthMessage('注册成功！请点击邮件里的链接完成验证后再登录', 'success');
+          authSubmitBtn.disabled = false;
+          authSubmitBtn.textContent = isLoginMode ? '登录' : '注册';
+          return;
+        }
+
         if (isLoginMode) {
           showAuthMessage('登录成功，正在跳转...', 'success');
         } else {
-          showAuthMessage('注册成功！请查收邮箱验证邮件', 'success');
+          showAuthMessage('注册成功！正在进入引导...', 'success');
         }
+
+        // 更新导航栏
+        updateNavAuthState();
 
         setTimeout(function() {
           showPage('onboarding');
           history.pushState(null, '', '#onboarding');
-          updateNavAuthState();
-        }, 1200);
+        }, 800);
       } catch (err) {
         showAuthMessage((isLoginMode ? '登录' : '注册') + '失败：' + err.message, 'error');
         authSubmitBtn.disabled = false;
@@ -2024,7 +2037,7 @@
   });
 
   // 路由守卫：未登录访问 dashboard 相关页面时跳转到登录页
-  var protectedPages = ['dashboard', 'assets', 'subscription', 'settings', 'plans', 'checkout', 'payment', 'payment-success', 'admin'];
+  var protectedPages = ['dashboard', 'assets', 'subscription', 'settings', 'plans', 'checkout', 'payment', 'payment-success', 'admin', 'onboarding', 'onboarding-success'];
   var originalShowPage = showPage;
   window.showPage = function(page) {
     var isProtected = protectedPages.indexOf(page) > -1;
