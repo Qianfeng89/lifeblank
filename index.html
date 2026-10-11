@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>留白 · 替你好好说再见</title>
 <link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap">
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  window.supabase = createClient(
+    'https://swryoiktxxiehyefbtmk.supabase.co',
+    'sb_publishable_vUKgWACYPYRml2Z0zQMg3w_17VTR2tP'
+  );
+</script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -925,24 +932,38 @@
   <section class="hero container">
     <div class="hero-eyebrow">账号登录</div>
     <h1>人生之画无需填满，<br>而是有选择地<em>留白</em></h1>
-    <p style="max-width:400px;">手机号验证登录，不用记密码。新用户自动注册。</p>
+    <p style="max-width:400px;">邮箱登录，新用户自动注册。也可以用 Magic Link 免密登录。</p>
   </section>
 
   <section class="section" style="padding-top:0;">
     <div class="container">
       <div class="form-card" style="max-width:420px;">
-        <div class="form-group">
-          <label class="form-label">手机号</label>
-          <input type="tel" class="form-input" placeholder="请输入手机号" maxlength="11">
+        <!-- 登录/注册切换 -->
+        <div style="display:flex;background:#FAF9F6;border-radius:10px;padding:4px;margin-bottom:24px;">
+          <button type="button" id="tabLogin" style="flex:1;padding:10px;border:none;background:#fff;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.06);">登录</button>
+          <button type="button" id="tabSignup" style="flex:1;padding:10px;border:none;background:transparent;border-radius:8px;font-size:14px;color:#6B7280;cursor:pointer;">注册</button>
         </div>
+
         <div class="form-group">
-          <label class="form-label">验证码</label>
-          <div style="display:flex;gap:8px;">
-            <input type="text" class="form-input" placeholder="6位验证码" maxlength="6" style="flex:1;">
-            <button type="button" class="btn-secondary" style="padding:12px 16px;font-size:13px;white-space:nowrap;" id="sendCodeBtn">发送验证码</button>
-          </div>
+          <label class="form-label">邮箱</label>
+          <input type="email" class="form-input" id="authEmail" placeholder="请输入邮箱地址">
         </div>
-        <button type="button" class="form-submit" style="margin-top:12px;" data-nav="onboarding">登录 / 注册</button>
+        <div class="form-group" id="passwordGroup">
+          <label class="form-label">密码</label>
+          <input type="password" class="form-input" id="authPassword" placeholder="请输入密码（至少6位）">
+        </div>
+
+        <div id="authMessage" style="display:none;padding:12px;border-radius:8px;font-size:13px;margin-bottom:16px;"></div>
+
+        <button type="button" class="form-submit" style="margin-top:12px;" id="authSubmitBtn">登录</button>
+
+        <div style="text-align:center;margin:20px 0;position:relative;">
+          <div style="position:absolute;top:50%;left:0;right:0;height:1px;background:#E4E3DD;"></div>
+          <span style="position:relative;background:#fff;padding:0 12px;font-size:12px;color:#9CA3AF;">或</span>
+        </div>
+
+        <button type="button" class="btn-secondary" style="width:100%;justify-content:center;display:flex;" id="magicLinkBtn">发送 Magic Link 免密登录</button>
+
         <p style="text-align:center;font-size:12px;color:#9CA3AF;margin-top:16px;">
           登录即代表同意《服务协议》和《隐私政策》
         </p>
@@ -1286,7 +1307,10 @@
       </ul>
     </div>
     <div class="main-content">
-      <h2 style="font-size:24px;font-weight:700;margin-bottom:24px;">早上好，欢迎回来</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+        <h2 style="font-size:24px;font-weight:700;">早上好，<span id="userPhoneDisplay">欢迎回来</span></h2>
+        <button type="button" id="logoutBtn" style="padding:8px 16px;background:transparent;border:1px solid #E4E3DD;border-radius:8px;font-size:13px;color:#6B7280;cursor:pointer;">退出登录</button>
+      </div>
 
       <div class="subscription-card">
         <div class="sub-label">当前状态</div>
@@ -1642,25 +1666,6 @@
     });
   });
 
-  // ===== 发送验证码倒计时 =====
-  var sendCodeBtn = document.getElementById('sendCodeBtn');
-  if (sendCodeBtn) {
-    sendCodeBtn.addEventListener('click', function() {
-      var count = 60;
-      var originalText = '发送验证码';
-      this.disabled = true;
-      var timer = setInterval(function() {
-        sendCodeBtn.textContent = count + 's 后重发';
-        count--;
-        if (count < 0) {
-          clearInterval(timer);
-          sendCodeBtn.textContent = originalText;
-          sendCodeBtn.disabled = false;
-        }
-      }, 1000);
-    });
-  }
-
   // ===== 计划选择 =====
   document.querySelectorAll('.plan-option').forEach(function(option) {
     option.addEventListener('click', function() {
@@ -1845,6 +1850,218 @@
       if (val === 'other') fee = 1500;
       var total = 329 + fee;
       pricePreview.innerHTML = text + '：订阅费 <b>¥329/年</b> + 车马费 <b>¥' + fee + '</b>（一次性，可退）<br>首年合计 <b>¥' + total + '</b>';
+    });
+  }
+
+  // ===== Supabase 用户认证 =====
+  var authEmail = document.getElementById('authEmail');
+  var authPassword = document.getElementById('authPassword');
+  var authSubmitBtn = document.getElementById('authSubmitBtn');
+  var authMessage = document.getElementById('authMessage');
+  var magicLinkBtn = document.getElementById('magicLinkBtn');
+  var tabLogin = document.getElementById('tabLogin');
+  var tabSignup = document.getElementById('tabSignup');
+  var passwordGroup = document.getElementById('passwordGroup');
+
+  var isLoginMode = true; // true=登录, false=注册
+
+  function showAuthMessage(text, type) {
+    authMessage.style.display = 'block';
+    authMessage.textContent = text;
+    authMessage.style.background = type === 'error' ? '#FEE2E2' : '#D1FAE5';
+    authMessage.style.color = type === 'error' ? '#DC2626' : '#065F46';
+  }
+
+  // 切换登录/注册模式
+  function switchMode(mode) {
+    isLoginMode = mode === 'login';
+    if (isLoginMode) {
+      tabLogin.style.background = '#fff';
+      tabLogin.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+      tabLogin.style.fontWeight = '500';
+      tabSignup.style.background = 'transparent';
+      tabSignup.style.boxShadow = 'none';
+      tabSignup.style.color = '#6B7280';
+      authSubmitBtn.textContent = '登录';
+      passwordGroup.style.display = 'block';
+    } else {
+      tabSignup.style.background = '#fff';
+      tabSignup.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)';
+      tabSignup.style.fontWeight = '500';
+      tabLogin.style.background = 'transparent';
+      tabLogin.style.boxShadow = 'none';
+      tabLogin.style.color = '#6B7280';
+      authSubmitBtn.textContent = '注册';
+      passwordGroup.style.display = 'block';
+    }
+  }
+
+  if (tabLogin) tabLogin.addEventListener('click', function() { switchMode('login'); });
+  if (tabSignup) tabSignup.addEventListener('click', function() { switchMode('signup'); });
+
+  // 登录/注册提交
+  if (authSubmitBtn) {
+    authSubmitBtn.addEventListener('click', async function() {
+      var email = authEmail.value.trim();
+      var password = authPassword.value.trim();
+
+      if (!email || !email.includes('@')) {
+        showAuthMessage('请输入正确的邮箱地址', 'error');
+        return;
+      }
+      if (!password || password.length < 6) {
+        showAuthMessage('密码至少需要 6 位', 'error');
+        return;
+      }
+
+      authSubmitBtn.disabled = true;
+      authSubmitBtn.textContent = isLoginMode ? '登录中...' : '注册中...';
+
+      try {
+        let result;
+        if (isLoginMode) {
+          result = await window.supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+        } else {
+          result = await window.supabase.auth.signUp({
+            email: email,
+            password: password
+          });
+        }
+
+        const { data, error } = result;
+        if (error) throw error;
+
+        if (isLoginMode) {
+          showAuthMessage('登录成功，正在跳转...', 'success');
+        } else {
+          showAuthMessage('注册成功！请查收邮箱验证邮件', 'success');
+        }
+
+        setTimeout(function() {
+          showPage('onboarding');
+          history.pushState(null, '', '#onboarding');
+          updateNavAuthState();
+        }, 1200);
+      } catch (err) {
+        showAuthMessage((isLoginMode ? '登录' : '注册') + '失败：' + err.message, 'error');
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.textContent = isLoginMode ? '登录' : '注册';
+      }
+    });
+  }
+
+  // Magic Link 免密登录
+  if (magicLinkBtn) {
+    magicLinkBtn.addEventListener('click', async function() {
+      var email = authEmail.value.trim();
+      if (!email || !email.includes('@')) {
+        showAuthMessage('请先输入你的邮箱地址', 'error');
+        return;
+      }
+
+      magicLinkBtn.disabled = true;
+      magicLinkBtn.textContent = '发送中...';
+
+      try {
+        const { data, error } = await window.supabase.auth.signInWithOtp({
+          email: email,
+          options: {
+            emailRedirectTo: window.location.origin + '/#onboarding'
+          }
+        });
+
+        if (error) throw error;
+
+        showAuthMessage('Magic Link 已发送到你的邮箱，请查收并点击链接登录', 'success');
+        magicLinkBtn.textContent = '已发送，重新发送';
+      } catch (err) {
+        showAuthMessage('发送失败：' + err.message, 'error');
+        magicLinkBtn.disabled = false;
+        magicLinkBtn.textContent = '发送 Magic Link 免密登录';
+      }
+    });
+  }
+
+  // 更新导航栏登录状态
+  function updateNavAuthState() {
+    const user = window.supabase.auth.currentUser;
+    const navCta = document.querySelector('.nav-cta');
+
+    if (user) {
+      // 已登录：导航显示个人中心
+      navCta.textContent = '个人中心';
+      navCta.setAttribute('data-nav', 'dashboard');
+      navCta.setAttribute('data-page', 'dashboard');
+      navCta.href = '#dashboard';
+    } else {
+      // 未登录：导航显示免费开始
+      navCta.textContent = '免费开始';
+      navCta.setAttribute('data-nav', '');
+      navCta.setAttribute('data-page', 'login');
+      navCta.href = '#login';
+    }
+  }
+
+  // 监听登录状态变化
+  window.supabase.auth.onAuthStateChange(function(event, session) {
+    updateNavAuthState();
+
+    // 如果在登录页且已登录，跳到 onboarding
+    if (session && window.location.hash === '#login') {
+      showPage('onboarding');
+      history.pushState(null, '', '#onboarding');
+    }
+  });
+
+  // 路由守卫：未登录访问 dashboard 相关页面时跳转到登录页
+  var protectedPages = ['dashboard', 'assets', 'subscription', 'settings', 'plans', 'checkout', 'payment', 'payment-success'];
+  var originalShowPage = showPage;
+  window.showPage = function(page) {
+    var isProtected = protectedPages.indexOf(page) > -1;
+    var user = window.supabase.auth.currentUser;
+
+    if (isProtected && !user) {
+      originalShowPage('login');
+      return;
+    }
+
+    originalShowPage(page);
+    updateNavAuthState();
+  };
+
+  // 初始化时检查登录状态
+  window.supabase.auth.getSession().then(function({ data: { session } }) {
+    updateNavAuthState();
+
+    // 显示用户邮箱
+    if (session && session.user) {
+      var email = session.user.email || '';
+      var display = document.getElementById('userPhoneDisplay');
+      if (display && email) {
+        // 邮箱打码：显示前2位 + *** + @域名
+        var parts = email.split('@');
+        if (parts.length === 2) {
+          var name = parts[0];
+          var masked = name.length > 2 ? name.slice(0, 2) + '***' + name.slice(-2) : name;
+          display.textContent = masked + '@' + parts[1];
+        } else {
+          display.textContent = email;
+        }
+      }
+    }
+  });
+
+  // 登出
+  var logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async function() {
+      await window.supabase.auth.signOut();
+      showPage('home');
+      history.pushState(null, '', '#home');
+      updateNavAuthState();
     });
   }
 })();
