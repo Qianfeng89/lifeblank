@@ -1600,17 +1600,23 @@
       e.preventDefault();
       var page = this.getAttribute('data-page');
 
-      // 特殊处理：如果是跳转到登录页，先判断用户是否已登录
-      if (page === 'login') {
-        const user = window.supabase ? window.supabase.auth.currentUser : null;
-        if (user) {
-          // 已登录，直接跳到资产清单页
-          page = 'assets';
-        }
+      // 特殊处理：如果是跳转到登录页，先异步检查用户是否已登录
+      if (page === 'login' && window.supabase) {
+        window.supabase.auth.getSession().then(function({ data: { session } }) {
+          if (session) {
+            // 已登录，直接跳到资产清单页
+            showPage('assets');
+            history.pushState(null, '', '#assets');
+          } else {
+            // 未登录，跳到登录页
+            showPage('login');
+            history.pushState(null, '', '#login');
+          }
+        });
+      } else {
+        showPage(page);
+        history.pushState(null, '', '#' + page);
       }
-
-      showPage(page);
-      history.pushState(null, '', '#' + page);
     });
   });
 
@@ -2479,8 +2485,13 @@
   const saveAssetFormBtn = document.getElementById('saveAssetFormBtn');
   if (saveAssetFormBtn) {
     saveAssetFormBtn.addEventListener('click', async function() {
-      const user = window.supabase.auth.currentUser;
-      if (!user) return;
+      // 用 getSession() 获取用户，而不是 currentUser
+      const { data: { session } } = await window.supabase.auth.getSession();
+      if (!session) {
+        alert('请先登录');
+        return;
+      }
+      const user = session.user;
 
       // 收集表单数据
       const typeSelect = document.querySelector('#assetFormPanel .form-select');
