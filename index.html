@@ -1980,25 +1980,38 @@
         const { data, error } = result;
         if (error) throw error;
 
-        // 检查是否真的有用户（用 API 返回的 data.user，而不是 currentUser）
+        // 用 API 返回的 data.user 和 data.session 判断，而不是 currentUser
         const user = data.user;
+        const session = data.session;
 
         if (!user) {
-          // 没有 user，说明需要邮箱验证
-          showAuthMessage(isLoginMode ? '登录失败：用户不存在或密码错误' : '注册成功！请点击邮件里的链接完成验证后再登录', 'error');
+          // 没有 user，说明用户不存在或注册被拒
+          showAuthMessage(isLoginMode ? '登录失败：用户不存在或密码错误' : '注册失败，请稍后重试', 'error');
           authSubmitBtn.disabled = false;
           authSubmitBtn.textContent = isLoginMode ? '登录' : '注册';
           return;
         }
 
+        if (!session) {
+          // 有 user 但没有 session → 说明项目开启了邮箱验证，用户需要去邮箱确认
+          showAuthMessage(
+            isLoginMode ? '登录失败：该邮箱尚未完成验证，请先前往邮箱点击验证链接' : '注册成功！请前往邮箱点击验证链接激活账号，激活后即可登录',
+            'error'
+          );
+          authSubmitBtn.disabled = false;
+          authSubmitBtn.textContent = isLoginMode ? '登录' : '注册';
+          return;
+        }
+
+        // 到这里说明 session 真正建立，登录/注册成功
         if (isLoginMode) {
           showAuthMessage('登录成功，正在跳转...', 'success');
         } else {
-          showAuthMessage('注册成功！正在进入引导...', 'success');
+          showAuthMessage('注册成功！正在进入资产登记...', 'success');
         }
 
-        // 更新导航栏，用 data.user 而不是 currentUser
-        updateNavAuthState(user);
+        // 更新导航栏，用 session.user
+        updateNavAuthState(session.user);
 
         setTimeout(function() {
           showPage('assets');
@@ -2106,6 +2119,17 @@
   window.supabase.auth.getSession().then(function({ data: { session } }) {
     // 用 session.user 更新导航栏，而不是 currentUser
     updateNavAuthState(session ? session.user : null);
+
+    if (!session) {
+      // 兜底：内存中没有 session 时，尝试 getUser() 从 localStorage 恢复/刷新
+      window.supabase.auth.getUser().then(function({ data: { user } }) {
+        if (user) {
+          updateNavAuthState(user);
+        } else {
+          console.log('[auth] 刷新后未检测到登录状态', new Date().toISOString());
+        }
+      });
+    }
 
     // 显示用户邮箱
     if (session && session.user) {
