@@ -1388,26 +1388,50 @@
           <label class="form-label">我希望怎么处理它？</label>
           <div style="display:grid;gap:8px;">
             <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#fff;border-radius:8px;cursor:pointer;">
-              <input type="radio" name="dashboard_action" checked style="margin-top:3px;">
+              <input type="radio" name="dashboard_action" value="delete" checked style="margin-top:3px;">
               <div>
                 <div style="font-size:14px;font-weight:500;">全部删除</div>
                 <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">注销账号、清除数据，谁也看不到</div>
               </div>
             </label>
             <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#fff;border-radius:8px;cursor:pointer;">
-              <input type="radio" name="dashboard_action" style="margin-top:3px;">
+              <input type="radio" name="dashboard_action" value="transfer" style="margin-top:3px;">
               <div>
                 <div style="font-size:14px;font-weight:500;">转交给指定人</div>
                 <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">账号、内容或资产移交给受益人</div>
               </div>
             </label>
             <label style="display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:#fff;border-radius:8px;cursor:pointer;">
-              <input type="radio" name="dashboard_action" style="margin-top:3px;">
+              <input type="radio" name="dashboard_action" value="sell" style="margin-top:3px;">
               <div>
                 <div style="font-size:14px;font-weight:500;">变现后转交</div>
                 <div style="font-size:12px;color:#9CA3AF;margin-top:2px;">帮我卖掉，钱转给指定受益人</div>
               </div>
             </label>
+          </div>
+          <!-- 受益人表单（选择转交/变现后转交时显示） -->
+          <div id="assetBeneficiaryForm" style="display:none;margin-top:12px;padding:14px;background:rgba(149,213,178,0.1);border-radius:8px;">
+            <div style="font-size:12px;font-weight:600;color:#2D6A4F;margin-bottom:10px;">这个资产交给谁？</div>
+            <div class="form-group">
+              <label class="form-label">姓名</label>
+              <input type="text" class="form-input" placeholder="比如：张女士">
+            </div>
+            <div class="form-group">
+              <label class="form-label">与您的关系</label>
+              <select class="form-select">
+                <option>母亲</option>
+                <option>父亲</option>
+                <option>配偶</option>
+                <option>子女</option>
+                <option>兄弟姐妹</option>
+                <option>其他亲属</option>
+                <option>朋友</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">手机号</label>
+              <input type="tel" class="form-input" placeholder="方便联系的手机号">
+            </div>
           </div>
         </div>
 
@@ -1574,6 +1598,10 @@
 
 <script>
 (function() {
+  // Supabase 是通过 <script type="module"> 异步加载的，业务脚本可能先于它执行。
+  // 必须等 window.supabase 就绪后再初始化全部业务逻辑，否则顶层 getSession 会报错，
+  // 导致后续事件绑定（保存/退出登录等）全部失效。
+  function _boot() {
   // ===== 页面路由 =====
   var pages = document.querySelectorAll('.page');
   var navLinks = document.querySelectorAll('[data-page]');
@@ -2482,6 +2510,17 @@
   }
 
   // ===== 资产表单保存 =====
+  // 资产表单：处置方式切换时显示/隐藏受益人表单
+  var assetActionRadios = document.querySelectorAll('#assetFormPanel input[name="dashboard_action"]');
+  var assetBeneficiaryForm = document.getElementById('assetBeneficiaryForm');
+  if (assetActionRadios.length && assetBeneficiaryForm) {
+    assetActionRadios.forEach(function(r) {
+      r.addEventListener('change', function() {
+        assetBeneficiaryForm.style.display = (this.value === 'transfer' || this.value === 'sell') ? 'block' : 'none';
+      });
+    });
+  }
+
   const saveAssetFormBtn = document.getElementById('saveAssetFormBtn');
   if (saveAssetFormBtn) {
     saveAssetFormBtn.addEventListener('click', async function() {
@@ -2507,6 +2546,25 @@
         return;
       }
 
+      // 收集受益人数据（仅当选择了转交/变现时）
+      let beneficiary_name = null;
+      let beneficiary_relation = null;
+      let beneficiary_phone = null;
+      const beneficiaryForm = document.getElementById('assetBeneficiaryForm');
+      if (beneficiaryForm && beneficiaryForm.style.display !== 'none') {
+        const bName = beneficiaryForm.querySelector('input[placeholder*="张女士"]');
+        const bRelation = beneficiaryForm.querySelector('select');
+        const bPhone = beneficiaryForm.querySelector('input[type="tel"]');
+        beneficiary_name = bName && bName.value ? bName.value.trim() : null;
+        beneficiary_relation = bRelation ? bRelation.value : null;
+        beneficiary_phone = bPhone && bPhone.value ? bPhone.value.trim() : null;
+
+        if (!beneficiary_name || !beneficiary_phone) {
+          alert('请填写受益人的姓名和手机号');
+          return;
+        }
+      }
+
       saveAssetFormBtn.disabled = true;
       saveAssetFormBtn.textContent = '保存中...';
 
@@ -2517,7 +2575,10 @@
             user_id: user.id,
             asset_type: assetType,
             name: name,
-            action: action
+            action: action,
+            beneficiary_name: beneficiary_name,
+            beneficiary_relation: beneficiary_relation,
+            beneficiary_phone: beneficiary_phone
           });
 
         if (error) throw error;
@@ -2525,10 +2586,15 @@
         // 关闭表单，清空输入
         document.getElementById('assetFormPanel').style.display = 'none';
         if (nameInput) nameInput.value = '';
+        // 重置处置方式为"全部删除"，隐藏受益人表单
+        const deleteRadio = document.querySelector('#assetFormPanel input[name="dashboard_action"][value="delete"]');
+        if (deleteRadio) deleteRadio.checked = true;
+        if (assetBeneficiaryForm) assetBeneficiaryForm.style.display = 'none';
 
         // 刷新资产列表
         renderAssetsPage();
         loadDashboardStats();
+        alert('资产保存成功');
       } catch (err) {
         alert('保存失败：' + err.message);
       } finally {
@@ -2611,6 +2677,20 @@
       loadAdminPage();
     }
   };
+  } // end _boot
+
+  // 等待 Supabase 就绪后启动业务逻辑（最多等待 6 秒）
+  if (window.supabase) {
+    _boot();
+  } else {
+    var _bootTries = 0;
+    var _bootTimer = setInterval(function() {
+      if (window.supabase || ++_bootTries > 60) {
+        clearInterval(_bootTimer);
+        _boot();
+      }
+    }, 100);
+  }
 })();
 </script>
 
