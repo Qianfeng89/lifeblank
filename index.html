@@ -2176,9 +2176,21 @@
 
   // ===== 数据库操作 =====
 
+  // 获取当前登录用户：优先 getSession()，其次 getUser()（刷新后 currentUser 为空，必须走异步恢复）
+  async function getAuthUser() {
+    try {
+      const { data: { session } } = await window.supabase.auth.getSession();
+      if (session && session.user) return session.user;
+      const { data: { user } } = await window.supabase.auth.getUser();
+      return user || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
   // 保存 Onboarding 资产到数据库
   async function saveOnboardingAssets() {
-    const user = window.supabase.auth.currentUser;
+    const user = await getAuthUser();
     if (!user) throw new Error('未登录');
 
     const assetGroups = document.querySelectorAll('#page-onboarding .asset-group');
@@ -2231,7 +2243,7 @@
 
   // 从数据库加载资产列表
   async function loadAssets() {
-    const user = window.supabase.auth.currentUser;
+    const user = await getAuthUser();
     if (!user) return [];
 
     const { data, error } = await window.supabase
@@ -2249,7 +2261,7 @@
 
   // 从数据库加载订阅状态
   async function loadSubscription() {
-    const user = window.supabase.auth.currentUser;
+    const user = await getAuthUser();
     if (!user) return null;
 
     const { data, error } = await window.supabase
@@ -2270,7 +2282,7 @@
 
   // 从数据库加载用户 profile
   async function loadProfile() {
-    const user = window.supabase.auth.currentUser;
+    const user = await getAuthUser();
     if (!user) return null;
 
     const { data, error } = await window.supabase
@@ -2417,7 +2429,7 @@
   // ===== 账号设置 =====
   async function loadSettingsPage() {
     const profile = await loadProfile();
-    const user = window.supabase.auth.currentUser;
+    const user = await getAuthUser();
 
     if (!profile || !user) return;
 
@@ -2461,7 +2473,7 @@
   const saveProfileBtn = document.getElementById('saveProfileBtn');
   if (saveProfileBtn) {
     saveProfileBtn.addEventListener('click', async function() {
-      const user = window.supabase.auth.currentUser;
+      const user = await getAuthUser();
       if (!user) return;
 
       const nickname = document.getElementById('inputNickname').value.trim();
@@ -2501,7 +2513,7 @@
   const saveSocialBtn = document.getElementById('saveSocialBtn');
   if (saveSocialBtn) {
     saveSocialBtn.addEventListener('click', async function() {
-      const user = window.supabase.auth.currentUser;
+      const user = await getAuthUser();
       if (!user) return;
 
       const wechat = document.getElementById('inputSocialWechat').value.trim();
