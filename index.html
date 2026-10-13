@@ -1624,6 +1624,20 @@
 </footer>
 
 <script>
+// 立即按 URL hash 显示对应页面（不等待 supabase 就绪），消除刷新时先闪首页的问题
+(function() {
+  try {
+    var h = (location.hash || '').replace('#', '');
+    if (h && document.getElementById('page-' + h)) {
+      var all = document.querySelectorAll('.page');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+      document.getElementById('page-' + h).classList.add('active');
+    }
+  } catch (e) {}
+})();
+</script>
+
+<script>
 (function() {
   // Supabase 是通过 <script type="module"> 异步加载的，业务脚本可能先于它执行。
   // 必须等 window.supabase 就绪后再初始化全部业务逻辑，否则顶层 getSession 会报错，
