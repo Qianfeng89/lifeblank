@@ -1638,6 +1638,16 @@
 </script>
 
 <script>
+// 立即缓存 localStorage 里的登录 session（赶在 SDK 初始化/自动刷新清除之前），
+// 供后续手动恢复层使用：即使 SDK 自动恢复失败，也能用这份缓存主动刷新 token 恢复登录态。
+window.__storedAuth = null;
+try {
+  var __raw = localStorage.getItem('sb-swryoiktxziehyefbtmk-auth-token');
+  if (__raw) window.__storedAuth = JSON.parse(__raw);
+} catch (e) {}
+</script>
+
+<script>
 (function() {
   // Supabase 是通过 <script type="module"> 异步加载的，业务脚本可能先于它执行。
   // 必须等 window.supabase 就绪后再初始化全部业务逻辑，否则顶层 getSession 会报错，
@@ -2172,19 +2182,29 @@
   };
 
   // 初始化时检查登录状态
-  window.supabase.auth.getSession().then(function({ data: { session } }) {
+  window.supabase.auth.getSession().then(async function({ data: { session } }) {
     // 用 session.user 更新导航栏，而不是 currentUser
     updateNavAuthState(session ? session.user : null);
 
     if (!session) {
       // 兜底：内存中没有 session 时，尝试 getUser() 从 localStorage 恢复/刷新
-      window.supabase.auth.getUser().then(function({ data: { user } }) {
+      window.supabase.auth.getUser().then(async function({ data: { user } }) {
         if (user) {
           updateNavAuthState(user);
+          setUserEmailDisplay(user);
           // session 恢复成功后，重新渲染当前页面（避免刷新后资产清单空白）
           renderCurrentPageData();
         } else {
-          console.log('[auth] 刷新后未检测到登录状态', new Date().toISOString());
+          // SDK 恢复失败 → 手动恢复层兜底：用页面加载时缓存的 session 主动刷新 token
+          const restored = await manualRestoreSession();
+          if (restored && restored.user) {
+            updateNavAuthState(restored.user);
+            setUserEmailDisplay(restored.user);
+            renderCurrentPageData();
+            console.log('[auth] 手动恢复 session 成功', new Date().toISOString());
+          } else {
+            console.log('[auth] 刷新后未检测到登录状态', new Date().toISOString());
+          }
         }
       });
     } else {
@@ -2194,19 +2214,7 @@
 
     // 显示用户邮箱
     if (session && session.user) {
-      var email = session.user.email || '';
-      var display = document.getElementById('userPhoneDisplay');
-      if (display && email) {
-        // 邮箱打码：显示前2位 + *** + @域名
-        var parts = email.split('@');
-        if (parts.length === 2) {
-          var name = parts[0];
-          var masked = name.length > 2 ? name.slice(0, 2) + '***' + name.slice(-2) : name;
-          display.textContent = masked + '@' + parts[1];
-        } else {
-          display.textContent = email;
-        }
-      }
+      setUserEmailDisplay(session.user);
     }
   });
 
@@ -2244,6 +2252,70 @@
     else if (page === 'dashboard') loadDashboardStats();
     else if (page === 'settings') loadSettingsPage();
     else if (page === 'subscription') loadSubscriptionPage();
+  }
+
+  // 显示用户邮箱（打码）
+  function setUserEmailDisplay(user) {
+    if (!user) return;
+    var email = user.email || '';
+    var display = document.getElementById('userPhoneDisplay');
+    if (display && email) {
+      var parts = email.split('@');
+      if (parts.length === 2) {
+        var name = parts[0];
+        var masked = name.length > 2 ? name.slice(0, 2) + '***' + name.slice(-2) : name;
+        display.textContent = masked + '@' + parts[1];
+      } else {
+        display.textContent = email;
+      }
+    }
+  }
+
+  // 手动 session 恢复层：SDK 自动恢复失败时，用页面加载时缓存的 session 主动刷新 token
+  async function manualRestoreSession() {
+    try {
+      const stored = window.__storedAuth;
+      if (!stored || !stored.access_token || !stored.refresh_token) return null;
+
+      const now = Math.floor(Date.now() / 1000);
+      const expiresAt = stored.expires_at ? Math.floor(stored.expires_at / 1000) : 0;
+
+      if (expiresAt && now < expiresAt) {
+        // access token 未过期，直接恢复
+        const { error } = await window.supabase.auth.setSession({
+          access_token: stored.access_token,
+          refresh_token: stored.refresh_token
+        });
+        if (!error) return stored;
+        return null;
+      }
+
+      // access token 已过期：绕过 SDK，直接调 Supabase 刷新接口
+      const resp = await fetch('https://swryoiktxziehyefbtmk.supabase.co/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST',
+        headers: {
+          'apikey': 'sb_publishable_vUKgWACYPYRml2Z0zQMg3w_17VTR2tP',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ refresh_token: stored.refresh_token })
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.access_token) {
+        // refresh_token 已失效，清除无效 session，避免反复尝试
+        try { localStorage.removeItem('sb-swryoiktxziehyefbtmk-auth-token'); } catch (e) {}
+        return null;
+      }
+      // 刷新成功，用 SDK setSession 恢复（SDK 会持久化新 session 到 localStorage）
+      const { error } = await window.supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token
+      });
+      if (error) return null;
+      return { user: data.user };
+    } catch (e) {
+      console.error('[auth] 手动恢复 session 异常', e);
+      return null;
+    }
   }
 
   // 获取当前登录用户：优先 getSession()，其次 getUser()（刷新后 currentUser 为空，必须走异步恢复）
