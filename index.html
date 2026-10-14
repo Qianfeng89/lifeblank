@@ -2322,7 +2322,19 @@ try {
   async function getAuthUser() {
     try {
       const { data: { session } } = await window.supabase.auth.getSession();
-      if (session && session.user) return session.user;
+      if (session && session.user) {
+        // 检查 token 是否过期：expires_at 是秒级时间戳，过期则主动刷新，避免用过期 token 查询导致数据空白
+        const expiresAt = session.expires_at;
+        const now = Math.floor(Date.now() / 1000);
+        if (expiresAt && now < expiresAt) {
+          return session.user;
+        }
+        // token 已过期：主动刷新
+        const { data: refreshed, error: refreshError } = await window.supabase.auth.refreshSession();
+        if (!refreshError && refreshed.session && refreshed.session.user) {
+          return refreshed.session.user;
+        }
+      }
       const { data: { user } } = await window.supabase.auth.getUser();
       return user || null;
     } catch (e) {
@@ -2442,10 +2454,13 @@ try {
 
   // 渲染资产清单页面
   async function renderAssetsPage() {
-    const assets = await loadAssets();
     const container = document.querySelector('#page-assets .asset-list-container');
-
     if (!container) return;
+
+    // 加载中占位：避免刷新后 session 恢复期间显示空白/空状态，造成"数据丢失"错觉
+    container.innerHTML = '<div style="text-align:center;padding:60px 0;color:#9CA3AF;">资产清单加载中...</div>';
+
+    const assets = await loadAssets();
 
     if (assets.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:60px 0;color:#9CA3AF;">还没有录入任何资产，点击上方「+ 添加资产」开始</div>';
@@ -2494,6 +2509,12 @@ try {
   // 渲染个人中心概览
   async function loadDashboardStats() {
     try {
+      // 加载中占位：避免刷新后 session 恢复期间显示 0/空，造成"数据丢失"错觉
+      const loadingAssetEl = document.querySelector('#page-dashboard .stat-assets');
+      if (loadingAssetEl) loadingAssetEl.textContent = '…';
+      const loadingStatusEl = document.querySelector('#page-dashboard .sub-status');
+      if (loadingStatusEl) loadingStatusEl.textContent = '加载中...';
+
       const assets = await loadAssets();
       const sub = await loadSubscription();
       console.log('[dashboard] loadDashboardStats 执行，assets=' + assets.length + ', sub=' + (sub ? sub.plan_type + '→' + sub.end_date : 'null'));
